@@ -30,18 +30,9 @@ jobs:
         shell: bash
         env:
           RELEASE_OUTPUTS: ${{ toJSON(steps.release.outputs) }}
+          CONFIG_PATH: "release-please-config.json"
         run: |
-          node -e '
-            const outputs = JSON.parse(process.env.RELEASE_OUTPUTS);
-            const released = [];
-            if (outputs["." + "--release_created"] === "true") {
-              released.push({ name: "ynabro", path: ".", tag: outputs["." + "--tag_name"] });
-            }
-            if (outputs["packages/pi-ynabro" + "--release_created"] === "true") {
-              released.push({ name: "pi-ynabro", path: "packages/pi-ynabro", tag: outputs["packages/pi-ynabro" + "--tag_name"] });
-            }
-            console.log("matrix=" + JSON.stringify(released));
-          ' >> $GITHUB_OUTPUT
+          node -e "const fs = require('fs'); const config = JSON.parse(fs.readFileSync(process.env.CONFIG_PATH, 'utf8')); const outputs = JSON.parse(process.env.RELEASE_OUTPUTS); const releasedPackages = Object.keys(config.packages).filter(pkgPath => outputs[pkgPath + '--release_created'] === 'true').map(pkgPath => ({ name: pkgPath.split('/').pop(), path: pkgPath, tag: outputs[pkgPath + '--tag_name'] })); console.log('matrix=' + JSON.stringify(releasedPackages));" >> $GITHUB_OUTPUT
 
   publish:
     name: Publish ${{ matrix.package.name }}
