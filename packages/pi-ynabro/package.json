@@ -21,7 +21,7 @@
       "./src/index.ts"
     ],
     "skills": [
-      "matched-transaction-reviewer"
+      "match-transactions"
     ]
   },
   "dependencies": {
