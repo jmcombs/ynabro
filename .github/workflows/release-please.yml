@@ -62,13 +62,13 @@ jobs:
       - name: Copy skill files for pi-ynabro
         if: matrix.package.name == 'pi-ynabro'
         run: |
-          mkdir -p packages/pi-ynabro/skills/matched-transaction-reviewer
-          cp -r skills/matched-transaction-reviewer/* packages/pi-ynabro/skills/matched-transaction-reviewer/
+          mkdir -p packages/pi-ynabro/skills/ynabro
+          cp -r skills/ynabro/* packages/pi-ynabro/skills/ynabro/
 
       - name: Verify skill files for pi-ynabro
         if: matrix.package.name == 'pi-ynabro'
         run: |
-          if [ ! -f packages/pi-ynabro/skills/matched-transaction-reviewer/SKILL.md ]; then
+          if [ ! -f packages/pi-ynabro/skills/ynabro/SKILL.md ]; then
             echo "ERROR: Skill files were not copied for pi-ynabro"
             exit 1
           fi
