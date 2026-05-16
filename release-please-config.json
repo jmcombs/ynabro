@@ -6,19 +6,23 @@
   "include-component-in-tag": true,
   "bump-minor-pre-major": true,
   "packages": {
-    ".": {
+    "packages/ynabro": {
       "release-type": "node",
       "component": "ynabro",
       "package-name": "ynabro",
-      "changelog-path": "CHANGELOG.md",
-      "release-as": "1.0.0"
+      "changelog-path": "CHANGELOG.md"
     },
     "packages/pi-ynabro": {
       "release-type": "node",
       "component": "pi-ynabro",
       "package-name": "pi-ynabro",
-      "changelog-path": "CHANGELOG.md",
-      "release-as": "1.0.0"
+      "changelog-path": "CHANGELOG.md"
+    },
+    "packages/openclaw-ynabro": {
+      "release-type": "node",
+      "component": "openclaw-ynabro",
+      "package-name": "openclaw-ynabro",
+      "changelog-path": "CHANGELOG.md"
     }
   }
 }

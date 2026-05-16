@@ -14,19 +14,21 @@ This document defines how agents should contribute to and develop the `ynabro` r
 
 ## Project Structure
 
-- `src/client/` — Core YNAB client wrapper
-- `src/tools/` — Individual tool implementations (one file per tool)
+- `packages/ynabro/` — Core YNAB client library (published as `ynabro`)
+  - `src/client/` — Core YNAB client wrapper
+  - `src/tools/` — Individual tool implementations (one file per tool)
+- `packages/pi-ynabro/` — Pi extension adapter (published as `pi-ynabro`)
+- `packages/openclaw-ynabro/` — OpenClaw plugin adapter (published as `openclaw-ynabro`)
 - `skills/ynabro/` — Centralized prompts and skill definitions
-- `packages/pi-ynabro/` — Thin pi extension registration layer only
 - `docs/` — Tool reference and architecture documentation
 
 ## Adding New Functionality
 
 When extending ynabro:
 
-1. Add client methods in `src/client/YnabroClient.ts`
-2. Create new tool functions in `src/tools/`
-3. Export new tools via `src/tools/index.ts` and `src/index.ts`
+1. Add client methods in `packages/ynabro/src/client/YnabroClient.ts`
+2. Create new tool functions in `packages/ynabro/src/tools/`
+3. Export new tools via `packages/ynabro/src/tools/index.ts` and `packages/ynabro/src/index.ts`
 4. Place all behavioral prompts and rules under `skills/ynabro/prompts/`
 5. Do **not** duplicate prompts or skills inside `packages/pi-ynabro/`
 6. Update `docs/TOOLS.md` and `AGENTS.md` as needed

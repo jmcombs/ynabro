@@ -25,8 +25,8 @@ All contributions must include documentation. Documentation is part of the featu
 
 | Component                  | Required Documentation                     | Location                              |
 |---------------------------|--------------------------------------------|---------------------------------------|
-| Client methods            | JSDoc + usage example                      | `src/client/YnabroClient.ts`          |
-| Tools                     | JSDoc + entry in tool reference            | `src/tools/` + `docs/TOOLS.md`        |
+| Client methods            | JSDoc + usage example                      | `packages/ynabro/src/client/YnabroClient.ts` |
+| Tools                     | JSDoc + entry in tool reference            | `packages/ynabro/src/tools/` + `docs/TOOLS.md` |
 | Wrappers (e.g. pi-ynabro) | Registration logic + usage notes           | `packages/pi-ynabro/src/index.ts`     |
 | New state modules         | Schema + example                           | `docs/ARCHITECTURE.md`                |
 | Behavioral changes        | Prompt updates                             | `skills/ynabro/prompts/`              |
@@ -97,9 +97,9 @@ New features must use the modular state format:
 
 ### Tool Development
 
-- Client logic → `src/client/YnabroClient.ts`
-- Tool functions → `src/tools/`
-- Exports → `src/tools/index.ts` and `src/index.ts`
+- Client logic → `packages/ynabro/src/client/YnabroClient.ts`
+- Tool functions → `packages/ynabro/src/tools/`
+- Exports → `packages/ynabro/src/tools/index.ts` and `packages/ynabro/src/index.ts`
 
 ### Naming Conventions (TypeScript)
 

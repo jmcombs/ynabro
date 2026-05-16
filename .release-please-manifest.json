@@ -1,4 +1,5 @@
 {
-  ".": "1.0.0",
-  "packages/pi-ynabro": "1.0.0"
+  "packages/ynabro": "1.0.0",
+  "packages/pi-ynabro": "1.0.0",
+  "packages/openclaw-ynabro": "1.0.0"
 }
