@@ -32,7 +32,7 @@ jobs:
           RELEASE_OUTPUTS: ${{ toJSON(steps.release.outputs) }}
           CONFIG_PATH: "release-please-config.json"
         run: |
-          node -e "const fs = require('fs'); const config = JSON.parse(fs.readFileSync(process.env.CONFIG_PATH, 'utf8')); const outputs = JSON.parse(process.env.RELEASE_OUTPUTS); const releasedPackages = Object.keys(config.packages).filter(pkgPath => outputs[pkgPath + '--release_created'] === 'true').map(pkgPath => ({ name: pkgPath.split('/').pop(), path: pkgPath, tag: outputs[pkgPath + '--tag_name'] })); console.log('matrix=' + JSON.stringify(releasedPackages));" >> $GITHUB_OUTPUT
+          node -e "const fs = require('fs'); const config = JSON.parse(fs.readFileSync(process.env.CONFIG_PATH, 'utf8')); const outputs = JSON.parse(process.env.RELEASE_OUTPUTS); const releasedPackages = Object.keys(config.packages).filter(pkgPath => outputs[pkgPath + '--release_created'] === 'true').map(pkgPath => ({ name: config.packages[pkgPath].component || pkgPath.split('/').pop(), path: pkgPath, tag: outputs[pkgPath + '--tag_name'] })); console.log('matrix=' + JSON.stringify(releasedPackages));" >> $GITHUB_OUTPUT
 
   publish:
     name: Publish ${{ matrix.package.name }}
@@ -77,4 +77,9 @@ jobs:
         run: npm run build
 
       - name: Publish to npm with provenance
-        run: npm publish --provenance --access public --workspace=${{ matrix.package.path }}
+        run: |
+          if [ "${{ matrix.package.path }}" = "." ]; then
+            npm publish --provenance --access public
+          else
+            npm publish --provenance --access public --workspace=${{ matrix.package.path }}
+          fi
