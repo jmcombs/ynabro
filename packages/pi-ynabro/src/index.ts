@@ -1,20 +1,17 @@
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import { AuthStorage } from "@earendil-works/pi-coding-agent";
 import { Type } from "typebox";
+import type { YnabroConfigAdapter } from "ynabro";
 import {
   approveTransaction,
   getPendingTransactions,
   getPlanInfo,
   getRecentTransactions,
   getSkillState,
+  setupYnab,
   updateSkillState,
   YnabroClient,
 } from "ynabro";
-
-interface YnabroConfigAdapter {
-  getDefaultPlanId(): Promise<string | undefined>;
-  setDefaultPlanId(planId: string): Promise<void>;
-}
 
 const authStorage = AuthStorage.create();
 
@@ -221,7 +218,7 @@ export default function ynabroExtension(api: ExtensionAPI): void {
 
       // Step 4: Store and return
       const selectedPlan = plans[planOptions.indexOf(selected)];
-      await piConfigAdapter.setDefaultPlanId(selectedPlan.id);
+      await setupYnab(client, plans, selectedPlan.id, piConfigAdapter);
       return {
         content: [
           {
