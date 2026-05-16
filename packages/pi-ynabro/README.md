@@ -18,10 +18,13 @@ pi install npm:pi-ynabro
 
 ## Available Tools
 
+- `ynabro_setup`
 - `ynabro_get_pending_transactions`
 - `ynabro_get_recent_transactions`
 - `ynabro_approve_transaction`
 - `ynabro_get_plan_info`
+- `ynabro_get_skill_state`
+- `ynabro_update_skill_state`
 
 ## Requirements
 

@@ -1,6 +1,14 @@
+![YNABro Logo](full_logo.png)
+
+<p align="center">
+  <a href="https://www.npmjs.com/package/openclaw-ynabro"><img src="https://img.shields.io/npm/v/openclaw-ynabro.svg?style=flat-square" alt="npm version"></a>
+  <a href="https://github.com/jmcombs/ynabro/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-MIT-3465a4?style=flat-square" alt="MIT License"></a>
+  <a href="https://github.com/sponsors/jmcombs"><img src="https://img.shields.io/badge/Sponsor-GitHub%20Sponsors-3465a4?style=flat-square" alt="GitHub Sponsors"></a>
+</p>
+
 # openclaw-ynabro
 
-OpenClaw plugin that registers [YNABro](https://github.com/jmcombs/ynabro) tools for YNAB budget management.
+OpenClaw plugin that registers [ynabro](https://www.npmjs.com/package/ynabro) tools for YNAB integration.
 
 ## Installation
 
@@ -8,39 +16,16 @@ OpenClaw plugin that registers [YNABro](https://github.com/jmcombs/ynabro) tools
 openclaw plugins install openclaw-ynabro
 ```
 
-## Configuration
+## Available Tools
 
-Set your YNAB Personal Access Token:
+- `ynabro_setup`
+- `ynabro_get_pending_transactions`
+- `ynabro_get_recent_transactions`
+- `ynabro_approve_transaction`
+- `ynabro_get_plan_info`
+- `ynabro_get_skill_state`
+- `ynabro_update_skill_state`
 
-```json
-{
-  "skills": {
-    "entries": {
-      "match-transactions": {
-        "enabled": true,
-        "env": {
-          "YNAB_TOKEN": "your-token-here"
-        }
-      }
-    }
-  }
-}
-```
+## Requirements
 
-Or set the `YNAB_TOKEN` environment variable directly.
-
-## Tools
-
-| Tool | Description |
-|------|-------------|
-| `ynabro_setup` | Set up YNAB integration (token + plan selection) |
-| `ynabro_get_pending_transactions` | Get pending (uncategorized) transactions |
-| `ynabro_get_recent_transactions` | Get recent transactions |
-| `ynabro_approve_transaction` | Approve a transaction |
-| `ynabro_get_plan_info` | Get plan details |
-| `ynabro_get_skill_state` | Read skill state (memory, auto-approve flag) |
-| `ynabro_update_skill_state` | Update skill state |
-
-## Skills
-
-This plugin ships the `match-transactions` skill for reviewing YNAB's automatic transaction matching.
+- `YNAB_TOKEN` environment variable must be set
