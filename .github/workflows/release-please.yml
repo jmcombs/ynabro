@@ -12,6 +12,9 @@ permissions:
 jobs:
   release-please:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
@@ -45,13 +48,13 @@ jobs:
     needs: release-please
     if: ${{ needs.release-please.outputs.matrix != '[]' && needs.release-please.outputs.matrix != '' }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
     strategy:
       fail-fast: false
       matrix:
         package: ${{ fromJson(needs.release-please.outputs.matrix) }}
-    permissions:
-      contents: read
-      id-token: write
     steps:
       - uses: actions/checkout@v4
         with:
