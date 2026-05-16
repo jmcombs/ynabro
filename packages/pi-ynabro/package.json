@@ -1,0 +1,29 @@
+{
+  "name": "pi-ynabro",
+  "version": "0.0.4",
+  "description": "Pi extension that registers YNABro tools for YNAB integration",
+  "type": "module",
+  "main": "./src/index.ts",
+  "files": [
+    "src",
+    "full_logo.png",
+    "logo.png",
+    "README.md"
+  ],
+  "pi": {
+    "extensions": [
+      "./src/index.ts"
+    ]
+  },
+  "dependencies": {
+    "ynabro": "file:../.."
+  },
+  "devDependencies": {
+    "@earendil-works/pi-coding-agent": "^0.74.0",
+    "@types/node": "^22.0.0",
+    "typescript": "^6.0.3"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  }
+}

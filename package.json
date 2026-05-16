@@ -1,0 +1,56 @@
+{
+  "name": "ynabro",
+  "version": "0.0.4",
+  "description": "A clean, agent-friendly YNAB client library for LLMs and coding agents",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "assets"
+  ],
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
+    "format": "biome format --write .",
+    "typecheck": "tsc --noEmit",
+    "check": "npm run lint && npm run typecheck && npm run test"
+  },
+  "keywords": [
+    "ynab",
+    "agent",
+    "llm",
+    "tools"
+  ],
+  "author": "Jeremy Combs",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jmcombs/ynabro"
+  },
+  "homepage": "https://github.com/jmcombs/ynabro#readme",
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^1.9.4",
+    "@types/node": "^22.0.0",
+    "typescript": "^6.0.3",
+    "vitest": "^3.0.0"
+  },
+  "dependencies": {
+    "ynab": "^2.4.0"
+  }
+}

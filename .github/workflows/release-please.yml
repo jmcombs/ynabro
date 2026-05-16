@@ -1,0 +1,72 @@
+name: Release Please
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+  pull-requests: write
+  id-token: write
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: googleapis/release-please-action@v4
+        id: release
+        with:
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
+
+      - name: Generate release matrix
+        id: set-matrix
+        shell: bash
+        env:
+          RELEASE_OUTPUTS: ${{ toJSON(steps.release.outputs) }}
+        run: |
+          node -e '
+            const outputs = JSON.parse(process.env.RELEASE_OUTPUTS);
+            const released = [];
+            if (outputs["." + "--release_created"] === "true") {
+              released.push({ name: "ynabro", path: ".", tag: outputs["." + "--tag_name"] });
+            }
+            if (outputs["packages/pi-ynabro" + "--release_created"] === "true") {
+              released.push({ name: "pi-ynabro", path: "packages/pi-ynabro", tag: outputs["packages/pi-ynabro" + "--tag_name"] });
+            }
+            console.log("matrix=" + JSON.stringify(released));
+          ' >> $GITHUB_OUTPUT
+
+  publish:
+    name: Publish ${{ matrix.package.name }}
+    needs: release-please
+    if: ${{ needs.release-please.outputs.matrix != '[]' && needs.release-please.outputs.matrix != '' }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        package: ${{ fromJson(needs.release-please.outputs.matrix) }}
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ matrix.package.tag }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Publish to npm with provenance
+        run: npm publish --provenance --access public --workspace=${{ matrix.package.path }}

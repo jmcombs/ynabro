@@ -1,0 +1,16 @@
+{
+  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
+  "separate-pull-requests": true,
+  "packages": {
+    ".": {
+      "release-type": "node",
+      "package-name": "ynabro",
+      "changelog-path": "CHANGELOG.md"
+    },
+    "packages/pi-ynabro": {
+      "release-type": "node",
+      "package-name": "pi-ynabro",
+      "changelog-path": "CHANGELOG.md"
+    }
+  }
+}
