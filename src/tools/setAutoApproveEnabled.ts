@@ -1,4 +1,4 @@
-import { updateTransactionModuleState } from '../state/transactionState.js';
+import { updateTransactionModuleState } from "../state/transactionState.js";
 
 /**
  * Enables or disables automatic approval of confident matches.

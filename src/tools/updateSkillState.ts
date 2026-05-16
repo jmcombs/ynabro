@@ -1,4 +1,4 @@
-import { updateSkillState as update } from '../state/skillState.js';
+import { updateSkillState as update } from "../state/skillState.js";
 
 /**
  * Updates the state for a given skill.

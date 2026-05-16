@@ -5,7 +5,7 @@ export {
   getPlanInfo,
   getRecentTransactions,
   getSkillState,
-  updateSkillState,
   setupYnab,
+  updateSkillState,
 } from "./tools/index.js";
 export type { YnabPlan, YnabTransaction } from "./types/ynab.js";
