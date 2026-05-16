@@ -11,12 +11,6 @@ import {
   YnabroClient,
 } from "ynabro";
 
-function getClient(): YnabroClient {
-  const token = process.env.YNAB_TOKEN;
-  if (!token) throw new Error("YNAB_TOKEN environment variable is not set");
-  return new YnabroClient(token);
-}
-
 function params(raw: unknown): Record<string, unknown> {
   return raw as Record<string, unknown>;
 }
@@ -64,6 +58,20 @@ export default definePluginEntry({
   name: "YNABro",
   description: "YNAB budget management tools for OpenClaw agents",
   register(api) {
+    function getClient(): YnabroClient {
+      const token =
+        (api.pluginConfig as { token?: string }).token ??
+        process.env.YNAB_TOKEN;
+      if (!token) {
+        throw new Error(
+          "YNAB token is not configured. " +
+            "Set it via plugins.entries.openclaw-ynabro.config.token in openclaw.json, " +
+            "or set the YNAB_TOKEN environment variable.",
+        );
+      }
+      return new YnabroClient(token);
+    }
+
     api.registerTool({
       name: "ynabro_setup",
       label: "Setup YNAB",
