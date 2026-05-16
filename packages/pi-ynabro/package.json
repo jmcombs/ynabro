@@ -1,6 +1,6 @@
 {
   "name": "pi-ynabro",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Pi extension that registers YNABro tools for YNAB integration",
   "type": "module",
   "main": "./src/index.ts",
@@ -10,6 +10,11 @@
     "logo.png",
     "README.md"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jmcombs/ynabro.git",
+    "directory": "packages/pi-ynabro"
+  },
   "pi": {
     "extensions": [
       "./src/index.ts"
@@ -20,7 +25,7 @@
   },
   "devDependencies": {
     "@earendil-works/pi-coding-agent": "^0.74.0",
-    "@types/node": "^22.0.0",
+    "@types/node": "^25.8.0",
     "typescript": "^6.0.3"
   },
   "scripts": {

@@ -3,11 +3,11 @@ import type {
   ToolDefinition,
 } from "@earendil-works/pi-coding-agent";
 import {
-  YnabroClient,
   approveTransaction,
   getPendingTransactions,
   getPlanInfo,
   getRecentTransactions,
+  YnabroClient,
 } from "ynabro";
 
 export default function ynabroExtension(api: ExtensionAPI) {

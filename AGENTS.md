@@ -1,38 +1,75 @@
-# ynabro — Agent Instructions
+# ynabro — Agent Development Instructions
 
-`ynabro` provides a clean, typed interface for YNAB operations designed specifically for LLMs and coding agents.
+This document defines how agents should contribute to and develop the `ynabro` repository.
 
-## Core Principles
+## Core Development Principles
 
-- Use the provided tools instead of calling the raw YNAB API.
-- Always work with **Plan IDs** (not budget IDs) in the public API.
-- Prefer high-confidence, conservative matching before calling `approveTransaction`.
-- Use the modular state system to persist knowledge (such as `server_knowledge`) across sessions.
+- **Read existing patterns before writing new code.** Match the style, structure, and conventions already present.
+- **Make minimal, focused changes.** Do not refactor unrelated code.
+- **Spec first for non-trivial work.** Clearly state what will be done before implementing.
+- **State assumptions explicitly.** Do not guess when requirements are ambiguous.
+- **Verify before completing.** Always run `npm run check` before marking work as done.
+- **No scope creep.** Only implement what was agreed upon. Surface new ideas as follow-up work.
+- **Use Conventional Commits.** All commits must follow the Conventional Commits specification.
 
-## State Management
+## Project Structure
 
-ynabro uses a modular state file. All persistent data lives under `modules.<feature>`.
+- `src/client/` — Core YNAB client wrapper
+- `src/tools/` — Individual tool implementations (one file per tool)
+- `skills/ynabro/` — Centralized prompts and skill definitions
+- `packages/pi-ynabro/` — Thin pi extension registration layer only
+- `docs/` — Tool reference and architecture documentation
 
-- Use delta requests (`last_knowledge_of_server`) when available to reduce API calls.
-- Store and retrieve state using the provided state utilities.
-- Per-plan settings live under `plans.<plan-id>.modules.<feature>`.
-- Global settings live under `global.modules.<feature>`.
+## Adding New Functionality
 
-## Available Tools
+When extending ynabro:
 
-| Tool                      | Purpose                              | When to Use                     |
-|---------------------------|--------------------------------------|---------------------------------|
-| `getPendingTransactions`  | Fetch unapproved transactions        | Primary tool for YNABro         |
-| `getRecentTransactions`   | Fetch recent activity                | Context / audit                 |
-| `approveTransaction`      | Approve a matched transaction        | After high-confidence match     |
-| `getPlanInfo`             | Get basic plan metadata              | Validation / display            |
+1. Add client methods in `src/client/YnabroClient.ts`
+2. Create new tool functions in `src/tools/`
+3. Export new tools via `src/tools/index.ts` and `src/index.ts`
+4. Place all behavioral prompts and rules under `skills/ynabro/prompts/`
+5. Do **not** duplicate prompts or skills inside `packages/pi-ynabro/`
+6. Update `docs/TOOLS.md` and `AGENTS.md` as needed
 
-## Recommended Workflow
+## State Management Rules
 
-1. Load existing state (including `last_knowledge_of_server`) for the plan
-2. Call `getPendingTransactions(planId)` using delta requests when possible
-3. Reason over the results using your matching logic
-4. Call `approveTransaction` only on high-confidence matches (unless auto-approve is enabled)
-5. Save updated state (especially new `server_knowledge`)
+All persistent data must follow the modular state schema:
 
-See `docs/TOOLS.md` for exact signatures.
+- Per-plan state: `plans.<plan-id>.modules.<feature>`
+- Global state: `global.modules.<feature>`
+- Never add new top-level keys outside of `modules`
+
+## Quality Expectations
+
+- Run `npm run check` before completing any task.
+- All new code must pass linting (Biome), type checking, and tests.
+- Follow the naming conventions defined in `CONTRIBUTING.md`.
+
+## Terminology
+
+- **Plan** — The public-facing YNAB concept (what users see in the app). This is what `ynabro` exposes in its public API.
+
+Agents should always use **Plan** terminology when interacting with `ynabro` tools and the client.
+
+## When to Ask
+
+Ask for clarification when:
+- Requirements are ambiguous
+- Multiple valid approaches exist
+- Changes would affect the public API or state schema
+
+## Keeping Dependencies Current
+
+Before implementing new features or making changes, always:
+
+1. Use web search or available search tools to check for the latest versions, best practices, and recommended configurations for the libraries and tools being used.
+
+2. If search tools are not available, explicitly warn the developer that search capabilities must be enabled for the agent to properly validate current standards and dependencies.
+
+Key areas to validate:
+- Latest stable versions of core dependencies
+- Current best practices for Biome, Vitest, and TypeScript
+- Recommended project setup patterns for the language/framework in use
+
+Update to the latest stable versions when appropriate, following semantic versioning best practices. Document any major version bumps or configuration changes in the commit message.
+```

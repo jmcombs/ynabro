@@ -1,73 +1,113 @@
 # Contributing to ynabro
 
-Please follow the existing code style enforced by Biome.
+## Quality Gate
 
-Run `npm run check` before submitting any changes.
+All contributions must pass the following command before submission:
+
+```bash
+npm run check
+```
+
+This runs linting (Biome), type checking, and tests.
+
+## Development Standards
+
+- Follow the principles defined in `AGENTS.md`
+- Use [Conventional Commits](https://www.conventionalcommits.org/) for all commit messages
+- Make minimal, focused changes
+- Read existing patterns before implementing new code
+
+## Documentation Standards
+
+All contributions must include documentation. Documentation is part of the feature.
+
+### What Must Be Documented
+
+| Component                  | Required Documentation                     | Location                              |
+|---------------------------|--------------------------------------------|---------------------------------------|
+| Client methods            | JSDoc + usage example                      | `src/client/YnabroClient.ts`          |
+| Tools                     | JSDoc + entry in tool reference            | `src/tools/` + `docs/TOOLS.md`        |
+| Wrappers (e.g. pi-ynabro) | Registration logic + usage notes           | `packages/pi-ynabro/src/index.ts`     |
+| New state modules         | Schema + example                           | `docs/ARCHITECTURE.md`                |
+| Behavioral changes        | Prompt updates                             | `skills/ynabro/prompts/`              |
+
+### Required Elements
+
+When documenting a new method or tool, include:
+- Purpose
+- Parameters with types and descriptions
+- Return value
+- Example usage
+- Side effects (e.g. state changes)
+
+### Mermaid Diagrams
+
+Significant features and flows must include Mermaid diagrams:
+- Use **sequence diagrams** for multi-component flows
+- Use **flowcharts** for decision logic
+
+Diagrams should be placed in `docs/ARCHITECTURE.md`, `docs/TOOLS.md`, or `skills/ynabro/prompts/`.
+
+### Documentation Process
+
+When adding a feature:
+1. Write JSDoc
+2. Update `docs/TOOLS.md`
+3. Add or update Mermaid diagram(s)
+4. Update relevant prompts in `skills/ynabro/prompts/`
+5. Run `npm run check`
 
 ## Adding New Functionality
 
-When adding new features to ynabro, follow these guidelines to keep the library extensible and maintainable.
+### Skills and Prompts
 
-### State File Structure
+All agent behavioral logic and rules must be added under:
 
-ynabro uses a modular state file (`state.json`) to persist data across sessions. All new functionality **must** be added under the `modules` key.
-
-#### Schema Rules
-
-- New features must live under `modules.<feature-name>`
-- Per-plan settings go under `plans.<plan-id>.modules.<feature-name>`
-- Global settings go under `global.modules.<feature-name>`
-- Never add new top-level keys outside of `modules`
-
-**Example structure when adding a new feature:**
-
-```json
-{
-  "version": 1,
-  "plans": {
-    "<plan-id>": {
-      "modules": {
-        "transactions": { ... },
-        "your-new-feature": {
-          "enabled": true,
-          "last_synced": "2026-05-15T..."
-        }
-      }
-    }
-  },
-  "global": {
-    "modules": {
-      "your-new-feature": { ... }
-    }
-  }
-}
+```
+skills/ynabro/prompts/
 ```
 
-### Code Organization
+Do not duplicate prompt files inside `packages/pi-ynabro/`.
 
-When adding a new feature:
+### State Schema
 
-1. Add any new client methods to `src/client/YnabroClient.ts`
-2. Create new tool functions in `src/tools/`
-3. Export them from `src/tools/index.ts` and `src/index.ts`
-4. Update types in `src/types/` if needed
-5. Document the new tools in `docs/TOOLS.md`
-6. Update `AGENTS.md` with usage guidance for the new capability
+New features must use the modular state format:
+- `plans.<plan-id>.modules.<feature-name>`
+- `global.modules.<feature-name>`
 
-### Naming Conventions
+### Tool Development
 
-- Feature/module names should be lowercase and hyphenated (e.g. `transaction-rules`, `budget-forecasting`)
-- Tool function names should be descriptive and start with a verb (`get`, `create`, `update`, `sync`, etc.)
+- Client logic → `src/client/YnabroClient.ts`
+- Tool functions → `src/tools/`
+- Exports → `src/tools/index.ts` and `src/index.ts`
 
-### Documentation Requirements
+### Naming Conventions (TypeScript)
 
-Every new feature must include:
+- Feature/module names: lowercase and hyphenated (`transaction-rules`)
+- Functions: camelCase starting with a verb (`getPendingTransactions`)
 
-- JSDoc comments on all public functions
-- Updated `docs/TOOLS.md`
-- Updated `AGENTS.md` (if the feature changes agent behavior)
-- Example usage in the relevant documentation
+## Versioning
 
-### Versioning
+This project uses **Release Please** with Conventional Commits:
 
-If your change modifies the state file structure in a breaking way, increment the top-level `version` field and provide a migration path in the release notes.
+| Commit Type              | Version Bump | Example                          |
+|--------------------------|--------------|----------------------------------|
+| `fix:`                   | Patch        | `fix: handle missing payee`      |
+| `feat:`                  | Minor        | `feat: add getPlanInfo`          |
+| `BREAKING CHANGE:` or `!`| Major        | `feat!: change tool signature`   |
+
+## Keeping Dependencies Current
+
+Contributors must:
+
+1. Use web search or available search tools to validate the latest versions and best practices before making changes.
+
+2. If search tools are unavailable, the agent must warn the developer that search capabilities need to be enabled so it can access current information.
+
+This includes checking:
+- Current versions of libraries and tools
+- Latest recommended configurations for Biome, Vitest, and TypeScript
+- Modern project setup patterns
+
+Major version bumps or significant configuration changes should be clearly documented in the commit message and release notes.
+```
