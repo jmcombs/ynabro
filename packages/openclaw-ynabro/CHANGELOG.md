@@ -1,5 +1,14 @@
 # Changelog
 
+## [2.1.0](https://github.com/jmcombs/ynabro/compare/openclaw-ynabro/v2.0.0...openclaw-ynabro/v2.1.0) (2026-05-16)
+
+
+### Features
+
+* **openclaw-ynabro:** implement adapter and two-step setup flow ([94f96a5](https://github.com/jmcombs/ynabro/commit/94f96a596edb7d1af6142ae8b6f070dc56b7b0fe))
+* **openclaw-ynabro:** integrate OpenClaw config for token resolution ([f2b5d88](https://github.com/jmcombs/ynabro/commit/f2b5d880af94215710d7ff6e0e9467f4f99ccb7d)), closes [#31](https://github.com/jmcombs/ynabro/issues/31)
+* unify YNAB config adapter across all platform adapters ([98ce8d7](https://github.com/jmcombs/ynabro/commit/98ce8d7c784ec43650c8cefb1921bb4001d8c976))
+
 ## [2.0.0](https://github.com/jmcombs/ynabro/compare/openclaw-ynabro/v1.0.0...openclaw-ynabro/v2.0.0) (2026-05-16)
 
 
