@@ -1,4 +1,3 @@
-// biome-ignore-all lint/suspicious/noExplicitAny: Required due to incomplete YNAB SDK types
 import * as ynab from "ynab";
 import type { YnabPlan, YnabTransaction } from "../types/ynab.js";
 
@@ -62,6 +61,7 @@ export class YnabroClient {
     patch: { approved?: boolean },
   ): Promise<void> {
     await this.api.transactions.updateTransaction(planId, transactionId, {
+      // biome-ignore lint/suspicious/noExplicitAny: Required due to incomplete YNAB SDK types
       transaction: patch as unknown as any,
     });
   }

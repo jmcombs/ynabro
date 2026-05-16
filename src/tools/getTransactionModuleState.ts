@@ -1,4 +1,4 @@
-import { getTransactionModuleState as getState } from '../state/transactionState.js';
+import { getTransactionModuleState as getState } from "../state/transactionState.js";
 
 /**
  * Returns the current state of the transactions module.

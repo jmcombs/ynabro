@@ -1,12 +1,12 @@
-import fs from 'fs';
-import path from 'path';
+import fs from "node:fs";
+import path from "node:path";
 
-const BASE_DIR = '.ynabro/skills';
+const BASE_DIR = ".ynabro/skills";
 
 export interface SkillState {
   last_knowledge_of_server: number | null;
   auto_approve_enabled: boolean;
-  memory: any[];
+  memory: unknown[];
 }
 
 const DEFAULT_STATE: SkillState = {
@@ -16,7 +16,7 @@ const DEFAULT_STATE: SkillState = {
 };
 
 function getSkillStatePath(skillSlug: string): string {
-  return path.join(BASE_DIR, skillSlug, 'state.json');
+  return path.join(BASE_DIR, skillSlug, "state.json");
 }
 
 function ensureSkillDir(skillSlug: string) {
@@ -33,11 +33,14 @@ export function getSkillState(skillSlug: string): SkillState {
     fs.writeFileSync(filePath, JSON.stringify(DEFAULT_STATE, null, 2));
     return { ...DEFAULT_STATE };
   }
-  const raw = fs.readFileSync(filePath, 'utf-8');
+  const raw = fs.readFileSync(filePath, "utf-8");
   return JSON.parse(raw);
 }
 
-export function updateSkillState(skillSlug: string, updates: Partial<SkillState>) {
+export function updateSkillState(
+  skillSlug: string,
+  updates: Partial<SkillState>,
+) {
   const current = getSkillState(skillSlug);
   const newState = { ...current, ...updates };
   const filePath = getSkillStatePath(skillSlug);

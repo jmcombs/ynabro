@@ -1,8 +1,8 @@
-import fs from 'fs';
-import path from 'path';
+import fs from "node:fs";
+import path from "node:path";
 
-const STATE_DIR = '.ynabro';
-const STATE_FILE = path.join(STATE_DIR, 'transactions-state.json');
+const STATE_DIR = ".ynabro";
+const STATE_FILE = path.join(STATE_DIR, "transactions-state.json");
 
 export interface TransactionModuleState {
   last_knowledge_of_server: number | null;
@@ -43,11 +43,13 @@ export function getTransactionModuleState(): TransactionModuleState {
     fs.writeFileSync(STATE_FILE, JSON.stringify(DEFAULT_STATE, null, 2));
     return { ...DEFAULT_STATE };
   }
-  const raw = fs.readFileSync(STATE_FILE, 'utf-8');
+  const raw = fs.readFileSync(STATE_FILE, "utf-8");
   return JSON.parse(raw);
 }
 
-export function updateTransactionModuleState(updates: Partial<TransactionModuleState>) {
+export function updateTransactionModuleState(
+  updates: Partial<TransactionModuleState>,
+) {
   const current = getTransactionModuleState();
   const newState = { ...current, ...updates };
   ensureStateDir();
@@ -57,19 +59,19 @@ export function updateTransactionModuleState(updates: Partial<TransactionModuleS
 export function addFrequentMismatch(localPayee: string, matchedPayee: string) {
   const state = getTransactionModuleState();
   const existing = state.patterns.frequent_mismatches.find(
-    (m) => m.local_payee.toLowerCase() === localPayee.toLowerCase()
+    (m) => m.local_payee.toLowerCase() === localPayee.toLowerCase(),
   );
 
   if (existing) {
     existing.count += 1;
-    existing.last_seen = new Date().toISOString().split('T')[0];
+    existing.last_seen = new Date().toISOString().split("T")[0];
     existing.matched_payee = matchedPayee; // update in case it changed
   } else {
     state.patterns.frequent_mismatches.push({
       local_payee: localPayee,
       matched_payee: matchedPayee,
       count: 1,
-      last_seen: new Date().toISOString().split('T')[0],
+      last_seen: new Date().toISOString().split("T")[0],
     });
   }
 

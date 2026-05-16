@@ -1,9 +1,9 @@
-import { YnabroClient } from '../client/YnabroClient.js';
-import fs from 'fs';
-import path from 'path';
+import fs from "node:fs";
+import path from "node:path";
+import { YnabroClient } from "../client/YnabroClient.js";
 
-const CONFIG_DIR = '.ynabro';
-const CONFIG_FILE = path.join(CONFIG_DIR, 'config.json');
+const CONFIG_DIR = ".ynabro";
+const CONFIG_FILE = path.join(CONFIG_DIR, "config.json");
 
 interface YnabConfig {
   token?: string;
@@ -19,7 +19,7 @@ function ensureConfigDir() {
 function loadConfig(): YnabConfig {
   ensureConfigDir();
   if (fs.existsSync(CONFIG_FILE)) {
-    return JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf-8'));
+    return JSON.parse(fs.readFileSync(CONFIG_FILE, "utf-8"));
   }
   return {};
 }
@@ -59,7 +59,8 @@ You can store it in one of these ways:
     // In a real implementation, we'd prompt for input here.
     // For now, we'll just instruct the user.
     return {
-      message: "Please set your YNAB token using one of the methods above, then run setupYnab() again."
+      message:
+        "Please set your YNAB token using one of the methods above, then run setupYnab() again.",
     };
   }
 
@@ -84,6 +85,6 @@ You can store it in one of these ways:
 
   return {
     message: `Setup complete! Default plan set to: ${selectedPlan.name}`,
-    defaultPlanId: selectedPlan.id
+    defaultPlanId: selectedPlan.id,
   };
 }

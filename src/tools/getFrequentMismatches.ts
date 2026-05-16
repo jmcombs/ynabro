@@ -1,4 +1,4 @@
-import { getTransactionModuleState } from '../state/transactionState.js';
+import { getTransactionModuleState } from "../state/transactionState.js";
 
 /**
  * Returns known frequent mismatches.
