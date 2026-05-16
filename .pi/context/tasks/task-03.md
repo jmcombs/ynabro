@@ -96,3 +96,35 @@ npm run typecheck -w packages/pi-ynabro
 grep "interface YnabroConfigAdapter" packages/pi-ynabro/src/index.ts  # should be empty
 grep "setupYnab" packages/pi-ynabro/src/index.ts  # should appear in import and in execute handler
 ```
+
+---
+
+## Completion Status
+
+**Completed:** 2026-05-16
+**Commit:** 4d958b8
+
+### What Changed
+
+Made three targeted edits to `packages/pi-ynabro/src/index.ts`:
+
+1. **Updated imports** — Added type import for `YnabroConfigAdapter` and added `setupYnab` to named imports from `"ynabro"`
+2. **Removed local interface** — Deleted the local `interface YnabroConfigAdapter` definition (now using core type)
+3. **Updated storage call** — Replaced `await piConfigAdapter.setDefaultPlanId(selectedPlan.id)` with `await setupYnab(client, plans, selectedPlan.id, piConfigAdapter)` in the `ynabro_setup` tool handler
+
+### Files Changed
+
+- `packages/pi-ynabro/src/index.ts` — 3 insertions, 6 deletions (net -3 lines)
+
+### Verification Results
+
+✅ `npm run typecheck -w packages/pi-ynabro` — Passed
+✅ `grep "interface YnabroConfigAdapter"` — No matches (local interface removed)
+✅ `grep "setupYnab"` — Found in import and execute handler
+✅ Biome formatting applied automatically
+
+### Notes
+
+- The full `npm run check` shows a typecheck error in `openclaw-ynabro` (Task 2), but that's expected and not in scope for this task
+- The `pi-ynabro` package itself passes all checks independently
+- All interactive UI logic remains unchanged as specified

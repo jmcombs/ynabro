@@ -74,24 +74,32 @@ export default definePluginEntry({
           afterWrite: { mode: "auto" },
           mutate: (draft) => {
             // Ensure the path exists before writing
-            if (!draft.plugins) draft.plugins = {} as typeof draft.plugins;
-            if (!draft.plugins.entries) draft.plugins.entries = {};
-            const existing = draft.plugins.entries["openclaw-ynabro"] ?? {};
-            const existingConfig =
-              (existing.config as Record<string, unknown> | undefined) ?? {};
-            existingConfig.defaultPlanId = planId;
-            draft.plugins.entries["openclaw-ynabro"] = {
-              ...existing,
-              config: existingConfig,
-            };
+            if (!draft.plugins) {
+              (draft as { plugins?: unknown }).plugins = {
+                entries: {},
+              } as unknown;
+            }
+            // TypeScript flow analysis requires explicit check after conditional assignment
+            if (draft.plugins) {
+              if (!draft.plugins.entries) {
+                draft.plugins.entries = {};
+              }
+              const existing = draft.plugins.entries["openclaw-ynabro"] ?? {};
+              const existingConfig =
+                (existing.config as Record<string, unknown> | undefined) ?? {};
+              existingConfig.defaultPlanId = planId;
+              draft.plugins.entries["openclaw-ynabro"] = {
+                ...existing,
+                config: existingConfig,
+              };
+            }
           },
         });
       },
     };
 
     function getClient(): YnabroClient {
-      const token = (api.pluginConfig as { token?: string } | undefined)
-        ?.token;
+      const token = (api.pluginConfig as { token?: string } | undefined)?.token;
       if (!token) {
         throw new Error(
           "YNAB token not configured. " +
@@ -145,12 +153,7 @@ export default definePluginEntry({
         const p = params(raw);
         const client = getClient();
         const plans = await client.getPlans();
-        await setupYnab(
-          client,
-          plans,
-          p.planId as string,
-          openClawAdapter,
-        );
+        await setupYnab(client, plans, p.planId as string, openClawAdapter);
         const saved = plans.find((plan) => plan.id === p.planId);
         return ok(
           JSON.stringify({

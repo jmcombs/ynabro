@@ -36,6 +36,7 @@
   "contracts": {
     "tools": [
       "ynabro_setup",
+      "ynabro_save_default_plan",
       "ynabro_get_pending_transactions",
       "ynabro_get_recent_transactions",
       "ynabro_approve_transaction",
