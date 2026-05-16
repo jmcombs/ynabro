@@ -2,6 +2,12 @@
 
 This document describes all available tools in the `ynabro` library.
 
+## Authentication
+
+All tools that call the YNAB API require a valid Personal Access Token. In the `openclaw-ynabro` adapter, the token is resolved from `plugins.entries.openclaw-ynabro.config.token` (OpenClaw plugin config) first, falling back to the `YNAB_TOKEN` environment variable. See `docs/ARCHITECTURE.md` for the full resolution flowchart.
+
+Tools that do **not** require a token: `ynabro_get_skill_state`, `ynabro_update_skill_state` (local state only).
+
 ## YnabroClient
 
 Core client for interacting with the YNAB API.

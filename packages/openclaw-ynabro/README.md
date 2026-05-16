@@ -26,6 +26,11 @@ openclaw plugins install openclaw-ynabro
 - `ynabro_get_skill_state`
 - `ynabro_update_skill_state`
 
-## Requirements
+## Configuration
 
-- `YNAB_TOKEN` environment variable must be set
+Set your YNAB Personal Access Token using one of the following methods (evaluated in order):
+
+1. **OpenClaw plugin config (preferred):** Add `token` under `plugins.entries.openclaw-ynabro.config` in `openclaw.json`. OpenClaw surfaces this as a sensitive field in its settings UI.
+2. **Environment variable (fallback):** `export YNAB_TOKEN=your_token_here`
+
+Generate a token at https://app.ynab.com/settings/developer.
