@@ -17,7 +17,8 @@ This document defines how agents should contribute to and develop the `ynabro` r
 - `packages/ynabro/` — Core YNAB client library (published as `ynabro`)
   - `src/client/` — Core YNAB client wrapper
   - `src/tools/` — Individual tool implementations (one file per tool)
-- `packages/pi-ynabro/` — Thin pi extension registration layer (published as `pi-ynabro`)
+- `packages/pi-ynabro/` — Pi extension adapter (published as `pi-ynabro`)
+- `packages/openclaw-ynabro/` — OpenClaw plugin adapter (published as `openclaw-ynabro`)
 - `skills/ynabro/` — Centralized prompts and skill definitions
 - `docs/` — Tool reference and architecture documentation
 

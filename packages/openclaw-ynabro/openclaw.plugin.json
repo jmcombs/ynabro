@@ -1,0 +1,10 @@
+{
+  "id": "openclaw-ynabro",
+  "name": "YNABro",
+  "description": "YNAB budget management tools for OpenClaw agents",
+  "skills": ["skills"],
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false
+  }
+}

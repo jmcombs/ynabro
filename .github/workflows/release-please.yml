@@ -88,6 +88,20 @@ jobs:
             exit 1
           fi
 
+      - name: Copy skill files for openclaw-ynabro
+        if: matrix.package.name == 'openclaw-ynabro'
+        run: |
+          mkdir -p packages/openclaw-ynabro/skills/ynabro
+          cp -r skills/ynabro/* packages/openclaw-ynabro/skills/ynabro/
+
+      - name: Verify skill files for openclaw-ynabro
+        if: matrix.package.name == 'openclaw-ynabro'
+        run: |
+          if [ ! -f packages/openclaw-ynabro/skills/ynabro/SKILL.md ]; then
+            echo "ERROR: Skill files were not copied for openclaw-ynabro"
+            exit 1
+          fi
+
       - name: Build
         run: npm run build
 

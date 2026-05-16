@@ -17,6 +17,12 @@
       "component": "pi-ynabro",
       "package-name": "pi-ynabro",
       "changelog-path": "CHANGELOG.md"
+    },
+    "packages/openclaw-ynabro": {
+      "release-type": "node",
+      "component": "openclaw-ynabro",
+      "package-name": "openclaw-ynabro",
+      "changelog-path": "CHANGELOG.md"
     }
   }
 }
