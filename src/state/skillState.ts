@@ -6,7 +6,8 @@ const BASE_DIR = ".ynabro/skills";
 export interface SkillState {
   last_knowledge_of_server: number | null;
   auto_approve_enabled: boolean;
-  memory: unknown[];
+  // biome-ignore lint/suspicious/noExplicitAny: Flexible memory for agent learning
+  memory: any[];
 }
 
 const DEFAULT_STATE: SkillState = {
