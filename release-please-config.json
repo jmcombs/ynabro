@@ -9,13 +9,15 @@
       "release-type": "node",
       "component": "ynabro",
       "package-name": "ynabro",
-      "changelog-path": "CHANGELOG.md"
+      "changelog-path": "CHANGELOG.md",
+      "release-as": "1.0.0"
     },
     "packages/pi-ynabro": {
       "release-type": "node",
       "component": "pi-ynabro",
       "package-name": "pi-ynabro",
-      "changelog-path": "CHANGELOG.md"
+      "changelog-path": "CHANGELOG.md",
+      "release-as": "1.0.0"
     }
   }
 }
