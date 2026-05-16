@@ -5,6 +5,28 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0](https://github.com/jmcombs/ynabro/compare/ynabro/v1.0.0...ynabro/v2.0.0) (2026-05-16)
+
+
+### ⚠ BREAKING CHANGES
+
+* The ynabro source has moved from the repo root to packages/ynabro/. Release Please config and manifest paths have changed accordingly.
+* prepare for first stable 1.0.0 release
+
+### Features
+
+* prepare for first stable 1.0.0 release ([6236a5f](https://github.com/jmcombs/ynabro/commit/6236a5f73377cb1505fa8a974eddc50c7dcbf1aa))
+
+
+### Bug Fixes
+
+* correct Release Please config for root package and add sequential-calls ([80d41b3](https://github.com/jmcombs/ynabro/commit/80d41b39e474dde703750d34a8047f4d2d4aee31))
+
+
+### Code Refactoring
+
+* move ynabro core package to packages/ynabro/ ([72f0a46](https://github.com/jmcombs/ynabro/commit/72f0a4695e9651344c16d55f24a9cabe0d311476))
+
 ## [1.0.0](https://github.com/jmcombs/ynabro/compare/ynabro/v0.0.4...ynabro/v1.0.0) (2026-05-16)
 
 
