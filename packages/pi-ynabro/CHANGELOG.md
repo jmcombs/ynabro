@@ -1,5 +1,17 @@
 # Changelog
 
+## [2.1.0](https://github.com/jmcombs/ynabro/compare/pi-ynabro/v2.0.0...pi-ynabro/v2.1.0) (2026-05-16)
+
+
+### Features
+
+* unify YNAB config adapter across all platform adapters ([98ce8d7](https://github.com/jmcombs/ynabro/commit/98ce8d7c784ec43650c8cefb1921bb4001d8c976))
+
+
+### Bug Fixes
+
+* **pi-ynabro:** use AuthStorage for token and plan ID storage ([24156cb](https://github.com/jmcombs/ynabro/commit/24156cb9b73b8b0ad419229fb03178229284535e)), closes [#33](https://github.com/jmcombs/ynabro/issues/33)
+
 ## [2.0.0](https://github.com/jmcombs/ynabro/compare/pi-ynabro/v1.0.0...pi-ynabro/v2.0.0) (2026-05-16)
 
 
