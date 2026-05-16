@@ -5,6 +5,44 @@
   "skills": ["skills"],
   "configSchema": {
     "type": "object",
-    "additionalProperties": false
+    "additionalProperties": false,
+    "properties": {
+      "token": {
+        "type": "string",
+        "description": "YNAB Personal Access Token"
+      },
+      "defaultPlanId": {
+        "type": "string",
+        "description": "Default YNAB plan ID selected during onboarding"
+      }
+    }
+  },
+  "uiHints": {
+    "token": {
+      "label": "YNAB Personal Access Token",
+      "placeholder": "your-ynab-personal-access-token",
+      "sensitive": true,
+      "help": "Generate at https://app.ynab.com/settings/developer. Falls back to YNAB_TOKEN env var if not set here."
+    }
+  },
+  "setup": {
+    "providers": [
+      {
+        "id": "ynab",
+        "envVars": ["YNAB_TOKEN"]
+      }
+    ]
+  },
+  "contracts": {
+    "tools": [
+      "ynabro_setup",
+      "ynabro_save_default_plan",
+      "ynabro_get_pending_transactions",
+      "ynabro_get_recent_transactions",
+      "ynabro_approve_transaction",
+      "ynabro_get_plan_info",
+      "ynabro_get_skill_state",
+      "ynabro_update_skill_state"
+    ]
   }
 }

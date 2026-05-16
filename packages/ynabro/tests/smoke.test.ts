@@ -13,6 +13,7 @@ import {
   getPendingTransactions,
   getPlanInfo,
   getRecentTransactions,
+  setupYnab,
 } from "../src/index.js";
 
 describe("ynabro smoke tests", () => {
@@ -29,5 +30,10 @@ describe("ynabro smoke tests", () => {
 
   it("should throw when creating client with empty token", () => {
     expect(() => new YnabroClient("")).toThrow("YNAB token is required");
+  });
+
+  it("should export setupYnab", () => {
+    expect(setupYnab).toBeDefined();
+    expect(typeof setupYnab).toBe("function");
   });
 });
