@@ -69,6 +69,26 @@ skills/ynabro/prompts/
 
 Do not duplicate prompt files inside `packages/pi-ynabro/`.
 
+### Per-Skill State
+
+Each skill maintains its own state in:
+
+```
+.ynabro/skills/<skill-slug>/state.json
+```
+
+Use `getSkillState(skillSlug)` and `updateSkillState(skillSlug, updates)` to manage skill memory. This design supports future private skills and prevents state conflicts between skills.
+
+### Single Source of Truth for Skills
+
+The detailed behavioral prompt for a skill lives in:
+
+```
+skills/ynabro/prompts/<skill-name>.md
+```
+
+Platform-specific files (`SKILL.md` for OpenClaw, extension code for pi) should remain lightweight and reference the prompt rather than duplicate its content. This keeps the prompt as the single source of truth and reduces maintenance overhead when updating skills.
+
 ### State Schema
 
 New features must use the modular state format:

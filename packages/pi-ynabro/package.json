@@ -8,7 +8,8 @@
     "src",
     "full_logo.png",
     "logo.png",
-    "README.md"
+    "README.md",
+    "skills"
   ],
   "repository": {
     "type": "git",
@@ -18,6 +19,9 @@
   "pi": {
     "extensions": [
       "./src/index.ts"
+    ],
+    "skills": [
+      "matched-transaction-reviewer"
     ]
   },
   "dependencies": {
