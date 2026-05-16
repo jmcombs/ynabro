@@ -19,6 +19,7 @@ openclaw plugins install openclaw-ynabro
 ## Available Tools
 
 - `ynabro_setup`
+- `ynabro_save_default_plan`
 - `ynabro_get_pending_transactions`
 - `ynabro_get_recent_transactions`
 - `ynabro_approve_transaction`
@@ -28,9 +29,32 @@ openclaw plugins install openclaw-ynabro
 
 ## Configuration
 
-Set your YNAB Personal Access Token using one of the following methods (evaluated in order):
+Set your YNAB Personal Access Token in `openclaw.json`:
 
-1. **OpenClaw plugin config (preferred):** Add `token` under `plugins.entries.openclaw-ynabro.config` in `openclaw.json`. OpenClaw surfaces this as a sensitive field in its settings UI.
-2. **Environment variable (fallback):** `export YNAB_TOKEN=your_token_here`
+```json
+{
+  "plugins": {
+    "entries": {
+      "openclaw-ynabro": {
+        "config": {
+          "token": "your-ynab-personal-access-token"
+        }
+      }
+    }
+  }
+}
+```
 
-Generate a token at https://app.ynab.com/settings/developer.
+OpenClaw also surfaces this as a sensitive field in its settings UI (labeled "YNAB Personal Access Token"). Generate a token at https://app.ynab.com/settings/developer.
+
+No environment variable fallback is supported.
+
+## Onboarding
+
+Run `ynabro_setup` to fetch your available YNAB plans, then `ynabro_save_default_plan` with the plan ID you want to use as the default:
+
+1. `ynabro_setup` — returns `{ plans: [{ id, name }] }`
+2. User (or agent) selects a plan from the list
+3. `ynabro_save_default_plan` with `{ planId: "<selected-id>" }` — persists the default
+
+After onboarding, all plan-dependent tools (`ynabro_get_pending_transactions`, `ynabro_get_recent_transactions`, `ynabro_approve_transaction`, `ynabro_get_plan_info`) resolve the plan automatically — no `planId` parameter required.

@@ -46,23 +46,46 @@ Example state structure:
 - `memory`: Flexible array for agent learning and patterns
 ```
 
-## OpenClaw Adapter — Token Resolution
+## Token Resolution
 
-The `openclaw-ynabro` adapter resolves the YNAB Personal Access Token in the following order when `getClient()` is called:
+### OpenClaw
 
 ```mermaid
 flowchart TD
     A[Tool execute called] --> B{api.pluginConfig.token set?}
-    B -- Yes --> D[Use plugin config token]
-    B -- No --> C{YNAB_TOKEN env var set?}
-    C -- Yes --> E[Use env var token]
-    C -- No --> F[Throw: descriptive error\nreferencing both config paths]
-    D --> G[Return YnabroClient]
-    E --> G
+    B -- Yes --> C[Use plugin config token]
+    B -- No --> D[Throw: configure token in openclaw.json]
+    C --> E[Return YnabroClient]
 ```
 
-Token is set by the user in one of two ways:
-- `plugins.entries.openclaw-ynabro.config.token` in `openclaw.json` (primary — surfaced in OpenClaw settings UI as a sensitive field)
-- `YNAB_TOKEN` environment variable (fallback — backwards-compatible)
+### pi
 
-> **Note:** The `ynabro_setup` tool uses a different code path (`setupYnab()` in the core library) and does not yet participate in this resolution order. This will be corrected in issue #32 when `setupYnab` is refactored to accept a `YnabroConfigAdapter`.
+```mermaid
+flowchart TD
+    A[Tool execute called] --> B{authStorage.getApiKey 'ynab' returns value?}
+    B -- Yes --> C[Use stored token]
+    B -- No --> D[Throw: run ynabro_setup to store token]
+    C --> E[Return YnabroClient]
+```
+
+## YnabroConfigAdapter
+
+The core `ynabro` library exports a platform-agnostic config adapter interface:
+
+```ts
+interface YnabroConfigAdapter {
+  getDefaultPlanId(): Promise<string | undefined>;
+  setDefaultPlanId(planId: string): Promise<void>;
+}
+```
+
+Each platform adapter implements this interface to store and retrieve the default plan ID in the platform's native config system:
+
+| Adapter | Storage mechanism |
+|---|---|
+| `pi-ynabro` | pi `AuthStorage` (`~/.pi/agent/auth.json`), key `"ynab-plan"` |
+| `openclaw-ynabro` | `api.runtime.config.mutateConfigFile` → `plugins.entries.openclaw-ynabro.config.defaultPlanId` |
+
+`setupYnab(client, plans, selectedPlanId, adapter)` in core validates that `selectedPlanId` is present in the provided `plans` list and delegates storage to the adapter. Each adapter's `ynabro_setup` tool is responsible for fetching plans, handling user selection, and invoking `setupYnab` — only the storage step is shared.
+
+This design prevents platform-specific config logic from leaking into the core library and ensures both adapters behave consistently while storing config in the right place for each runtime.

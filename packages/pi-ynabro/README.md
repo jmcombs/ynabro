@@ -28,4 +28,4 @@ pi install npm:pi-ynabro
 
 ## Requirements
 
-- `YNAB_TOKEN` environment variable must be set
+Run `ynabro_setup` once to complete interactive onboarding. The tool will prompt for a YNAB Personal Access Token (generate at https://app.ynab.com/settings/developer) and let you select a default plan. Both are stored securely in pi's `AuthStorage` (`~/.pi/agent/auth.json`).

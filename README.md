@@ -20,14 +20,23 @@ npm install ynabro
 ## Quick Start
 
 ```ts
-import { YnabroClient, getPendingTransactions, approveTransaction } from 'ynabro';
+import { YnabroClient, setupYnab, getPendingTransactions, approveTransaction } from 'ynabro';
+import type { YnabroConfigAdapter } from 'ynabro';
 
-const client = new YnabroClient(process.env.YNAB_TOKEN!);
-const pending = await getPendingTransactions(client, planId);
+// 1. Implement the adapter for your platform's config system
+const adapter: YnabroConfigAdapter = {
+  getDefaultPlanId: async () => /* read from your config */ undefined,
+  setDefaultPlanId: async (id) => { /* write to your config */ },
+};
 
-// ... agent decides which to approve ...
+// 2. One-time setup: fetch plans, let the user select, then store
+const client = new YnabroClient(token);
+const plans = await client.getPlans();
+await setupYnab(client, plans, selectedPlanId, adapter);
 
-await approveTransaction(client, planId, transactionId);
+// 3. Subsequent calls — no planId needed in the adapter layer
+const pending = await getPendingTransactions(client, await adapter.getDefaultPlanId()!);
+await approveTransaction(client, await adapter.getDefaultPlanId()!, transactionId);
 ```
 
 ## Documentation
