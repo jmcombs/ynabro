@@ -31,6 +31,7 @@ describe("setupYnab", () => {
   it("stores the correct plan ID", async () => {
     const setDefaultPlanIdMock = vi.fn();
     const adapter: YnabroConfigAdapter = {
+      hasToken: async () => false,
       getDefaultPlanId: async () => undefined,
       setDefaultPlanId: setDefaultPlanIdMock,
     };
@@ -43,6 +44,7 @@ describe("setupYnab", () => {
   it("calls setDefaultPlanId exactly once", async () => {
     const setDefaultPlanIdMock = vi.fn();
     const adapter: YnabroConfigAdapter = {
+      hasToken: async () => false,
       getDefaultPlanId: async () => undefined,
       setDefaultPlanId: setDefaultPlanIdMock,
     };
@@ -54,6 +56,7 @@ describe("setupYnab", () => {
 
   it("throws when selectedPlanId not in plans", async () => {
     const adapter: YnabroConfigAdapter = {
+      hasToken: async () => false,
       getDefaultPlanId: async () => undefined,
       setDefaultPlanId: async () => {},
     };
@@ -65,6 +68,7 @@ describe("setupYnab", () => {
 
   it("error message includes the invalid plan ID", async () => {
     const adapter: YnabroConfigAdapter = {
+      hasToken: async () => false,
       getDefaultPlanId: async () => undefined,
       setDefaultPlanId: async () => {},
     };
@@ -76,6 +80,7 @@ describe("setupYnab", () => {
 
   it("error message lists valid plan IDs", async () => {
     const adapter: YnabroConfigAdapter = {
+      hasToken: async () => false,
       getDefaultPlanId: async () => undefined,
       setDefaultPlanId: async () => {},
     };
@@ -93,6 +98,7 @@ describe("setupYnab", () => {
   it("does not call setDefaultPlanId if validation fails", async () => {
     const setDefaultPlanIdMock = vi.fn();
     const adapter: YnabroConfigAdapter = {
+      hasToken: async () => false,
       getDefaultPlanId: async () => undefined,
       setDefaultPlanId: setDefaultPlanIdMock,
     };
@@ -117,6 +123,7 @@ describe("setupYnab", () => {
       },
     ];
     const adapter: YnabroConfigAdapter = {
+      hasToken: async () => false,
       getDefaultPlanId: async () => undefined,
       setDefaultPlanId: async () => {},
     };
@@ -128,6 +135,7 @@ describe("setupYnab", () => {
 
   it("succeeds selecting the last plan in a multi-plan list", async () => {
     const adapter: YnabroConfigAdapter = {
+      hasToken: async () => false,
       getDefaultPlanId: async () => undefined,
       setDefaultPlanId: async () => {},
     };
@@ -145,6 +153,7 @@ describe("YnabroConfigAdapter", () => {
 
   it("adapter interface can be implemented", () => {
     const adapter: YnabroConfigAdapter = {
+      hasToken: async () => false,
       getDefaultPlanId: async () => "x",
       setDefaultPlanId: async () => {},
     };
