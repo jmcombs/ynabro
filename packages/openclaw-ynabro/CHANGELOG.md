@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.2.2](https://github.com/jmcombs/ynabro/compare/openclaw-ynabro/v2.2.1...openclaw-ynabro/v2.2.2) (2026-05-17)
+
+
+### Bug Fixes
+
+* **openclaw-ynabro:** revert hooks -&gt; extensions for plugin entry point ([f4673f7](https://github.com/jmcombs/ynabro/commit/f4673f70b0477d1df8c7d1b8a5c1b2624bf20f1d))
+* **openclaw-ynabro:** revert hooks -&gt; extensions for plugin entry point ([dcfda00](https://github.com/jmcombs/ynabro/commit/dcfda00c6cac4c4ef2727b3588755c44b55577f6))
+
 ## [2.2.1](https://github.com/jmcombs/ynabro/compare/openclaw-ynabro/v2.2.0...openclaw-ynabro/v2.2.1) (2026-05-17)
 
 
