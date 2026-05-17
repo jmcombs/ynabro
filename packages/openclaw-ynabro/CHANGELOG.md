@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.2.1](https://github.com/jmcombs/ynabro/compare/openclaw-ynabro/v2.2.0...openclaw-ynabro/v2.2.1) (2026-05-17)
+
+
+### Bug Fixes
+
+* **openclaw-ynabro:** add build step and fix openclaw.hooks entry point ([2a06ae1](https://github.com/jmcombs/ynabro/commit/2a06ae193f5ba6743495f244f5a320af0192a6b3))
+* **openclaw-ynabro:** add build step and fix openclaw.hooks entry point ([fc7f878](https://github.com/jmcombs/ynabro/commit/fc7f87842b8a81dabc9d5b11e832b2d77cb2a6d1)), closes [#41](https://github.com/jmcombs/ynabro/issues/41)
+
 ## [2.2.0](https://github.com/jmcombs/ynabro/compare/openclaw-ynabro/v2.1.0...openclaw-ynabro/v2.2.0) (2026-05-17)
 
 
