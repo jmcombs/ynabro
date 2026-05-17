@@ -329,11 +329,23 @@ export default definePluginEntry({
                 defaultPlanId: planId,
               }),
             );
-          } catch (_error) {
+          } catch (err) {
             const status = await checkOnboardingStatus(openClawAdapter);
+            const errorMessage =
+              err instanceof Error ? err.message : String(err);
+            if (status.missing.includes("plan")) {
+              return ok(
+                JSON.stringify({
+                  error: "save_failed",
+                  message: errorMessage,
+                  ...status,
+                }),
+              );
+            }
             return ok(
               JSON.stringify({
                 error: "onboarding_required",
+                message: errorMessage,
                 ...status,
               }),
             );
