@@ -91,6 +91,17 @@ jobs:
       - run: npm run build
       - name: Pack tarball
         run: npm pack --workspace packages/openclaw-ynabro --pack-destination /tmp
+      - name: Assert tarball manifest has no workspace-local path deps
+        run: |
+          TARBALL=$(ls /tmp/openclaw-ynabro-*.tgz)
+          MANIFEST=$(tar -xOzf "$TARBALL" package/package.json)
+          echo "$MANIFEST"
+          if echo "$MANIFEST" | grep -q '"file:'; then
+            echo "FAIL: tarball package.json contains file: dependency references"
+            echo "These are workspace-local paths and will not resolve after install."
+            exit 1
+          fi
+          echo "No file: references found in tarball manifest."
       - name: Simulate openclaw install (--omit=dev --omit=peer)
         run: |
           TARBALL=$(ls /tmp/openclaw-ynabro-*.tgz)
@@ -109,7 +120,9 @@ jobs:
           ls node_modules/
           echo "--- Verifying runtime dependencies ---"
           test -d node_modules/@sinclair/typebox \
-            || { echo "FAIL: @sinclair/typebox not installed (devDependency?)"; exit 1; }
+            || { echo "FAIL: @sinclair/typebox not installed (check devDependencies)"; exit 1; }
+          test -d node_modules/ynabro \
+            || { echo "FAIL: ynabro not installed (check dependencies)"; exit 1; }
           echo "All runtime dependencies resolved."
 
   conformance:
