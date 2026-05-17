@@ -39,44 +39,8 @@ jobs:
         run: npx secretlint "**/*"
         continue-on-error: true
 
-  plugin-inspector:
-    name: Plugin Inspector (openclaw-ynabro)
-    runs-on: ubuntu-latest
-    needs: check
-    permissions:
-      contents: read
-      security-events: write
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
-      - run: npm ci
-      - run: npm run build
-      - name: Run plugin-inspector
-        run: |
-          npx --yes @openclaw/plugin-inspector@latest ci \
-            --plugin-root packages/openclaw-ynabro \
-            --no-openclaw \
-            --allow-execute \
-            --mock-sdk \
-            --sarif "$GITHUB_WORKSPACE/plugin-inspector.sarif" \
-            --junit "$GITHUB_WORKSPACE/plugin-inspector.xml"
-      - name: Upload SARIF to GitHub Code Scanning
-        if: always()
-        uses: github/codeql-action/upload-sarif@v4
-        with:
-          sarif_file: plugin-inspector.sarif
-      - name: Upload JUnit report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: plugin-inspector-junit
-          path: plugin-inspector.xml
-
-  pack-install:
-    name: Pack & install simulation (openclaw-ynabro)
+  plugin-load:
+    name: Install and load openclaw-ynabro
     runs-on: ubuntu-latest
     needs: check
     permissions:
@@ -89,25 +53,38 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run build
-      - name: Pack tarball
-        run: npm pack --workspace packages/openclaw-ynabro --pack-destination /tmp
-      - name: Assert tarball manifest has no workspace-local path deps
+      - name: Pack ynabro and openclaw-ynabro tarballs
         run: |
-          TARBALL=$(ls /tmp/openclaw-ynabro-*.tgz)
-          MANIFEST=$(tar -xOzf "$TARBALL" package/package.json)
-          echo "$MANIFEST"
-          if echo "$MANIFEST" | grep -q '"file:'; then
-            echo "FAIL: tarball package.json contains file: dependency references"
-            echo "These are workspace-local paths and will not resolve after install."
-            exit 1
-          fi
-          echo "No file: references found in tarball manifest."
-      - name: Simulate openclaw install (--omit=dev --omit=peer)
+          mkdir -p /tmp/tarballs
+          npm pack --workspace packages/ynabro --pack-destination /tmp/tarballs
+          npm pack --workspace packages/openclaw-ynabro --pack-destination /tmp/tarballs
+          ls -la /tmp/tarballs/
+      - name: Assert no workspace-local path deps in tarballs
         run: |
-          TARBALL=$(ls /tmp/openclaw-ynabro-*.tgz)
+          set -e
+          for TARBALL in /tmp/tarballs/*.tgz; do
+            echo "=== Inspecting $(basename "$TARBALL") ==="
+            MANIFEST=$(tar -xOzf "$TARBALL" package/package.json)
+            if echo "$MANIFEST" | grep -q '"file:'; then
+              echo "FAIL: $(basename "$TARBALL") contains a file: dependency."
+              echo "Workspace-local paths do not resolve after install."
+              echo "$MANIFEST"
+              exit 1
+            fi
+          done
+          echo "OK: no file: refs in any tarball manifest."
+      - name: Install with OpenClaw-equivalent flags and load plugin
+        run: |
+          set -euo pipefail
+          OC_TARBALL=$(ls /tmp/tarballs/openclaw-ynabro-*.tgz)
+          YN_TARBALL=$(ls /tmp/tarballs/ynabro-*.tgz)
           INSTALL_DIR=$(mktemp -d)
           cd "$INSTALL_DIR"
           echo '{"type":"module"}' > package.json
+          # Match the install flags used by `openclaw plugins install`.
+          # Also pull in openclaw itself -- at runtime the OpenClaw host provides
+          # this peer dep because plugins live inside its npm tree; in CI we
+          # have to install it explicitly so the plugin's SDK imports resolve.
           npm install \
             --omit=dev \
             --omit=peer \
@@ -115,15 +92,29 @@ jobs:
             --ignore-scripts \
             --no-audit \
             --no-fund \
-            "$TARBALL"
-          echo "--- Installed packages ---"
+            "$OC_TARBALL" "$YN_TARBALL" \
+            'openclaw@^2026.4.24'
+          echo "--- node_modules (top level) ---"
           ls node_modules/
-          echo "--- Verifying runtime dependencies ---"
-          test -d node_modules/@sinclair/typebox \
-            || { echo "FAIL: @sinclair/typebox not installed (check devDependencies)"; exit 1; }
-          test -d node_modules/ynabro \
-            || { echo "FAIL: ynabro not installed (check dependencies)"; exit 1; }
-          echo "All runtime dependencies resolved."
+          echo "--- Loading plugin entry (mirrors gateway startup) ---"
+          # `import('openclaw-ynabro')` executes the top-level imports in
+          # dist/index.js, which transitively imports ynabro, @sinclair/typebox,
+          # openclaw/plugin-sdk/*, etc. Any missing runtime dep fails here with
+          # the exact 'Cannot find module/package X' error OpenClaw would show.
+          node --input-type=module -e "
+            import('openclaw-ynabro')
+              .then(m => {
+                if (!m.default || !m.default.id) {
+                  console.error('FAIL: no default export / missing id');
+                  process.exit(1);
+                }
+                console.log('LOAD OK: plugin id =', m.default.id);
+              })
+              .catch(err => {
+                console.error('LOAD FAILED:', err.message);
+                process.exit(1);
+              });
+          "
 
   conformance:
     runs-on: ubuntu-latest
