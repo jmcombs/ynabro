@@ -1,6 +1,6 @@
 {
   "name": "ynabro",
-  "version": "2.2.0",
+  "version": "2.2.1",
   "description": "A clean, agent-friendly YNAB client library for LLMs and coding agents",
   "type": "module",
   "exports": {
