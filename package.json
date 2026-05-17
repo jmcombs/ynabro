@@ -7,7 +7,7 @@
     "packages/*"
   ],
   "scripts": {
-    "build": "npm run build --workspaces --if-present",
+    "build": "npm run build -w packages/ynabro && npm run build --workspaces --if-present",
     "test": "npm run test --workspaces --if-present",
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
