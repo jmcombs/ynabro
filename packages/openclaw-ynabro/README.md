@@ -171,11 +171,14 @@ Add the following entry to the `agents.list` array in `~/.openclaw/openclaw.json
   // Internal name used when listing agents via `openclaw agents list`
   "name": "ynabro-matchmaker",
 
-  // Display name, emoji, and avatar shown in the OpenClaw dashboard
+  // Display name, emoji, and avatar shown in the OpenClaw dashboard.
+  // Use an https:// URL rather than a bare filename — workspace-relative
+  // paths are only resolvable by the local gateway, not by remote or mobile
+  // clients (e.g. Safari on iOS).
   "identity": {
     "name": "YNABro Matchmaker",
     "emoji": "🔁",
-    "avatar": "logo.png"
+    "avatar": "https://raw.githubusercontent.com/jmcombs/ynabro/main/packages/openclaw-ynabro/logo.png"
   },
 
   // Isolated workspace — this agent gets its own AGENTS.md, memory,
