@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.2.12](https://github.com/jmcombs/ynabro/compare/openclaw-ynabro/v2.2.11...openclaw-ynabro/v2.2.12) (2026-05-17)
+
+
+### Bug Fixes
+
+* **openclaw-ynabro:** surface real error from ynabro_save_default_plan instead of swallowing it ([2ee2d69](https://github.com/jmcombs/ynabro/commit/2ee2d69d16cd8936ec9ce7c06b29804623e70d85))
+
 ## [2.2.11](https://github.com/jmcombs/ynabro/compare/openclaw-ynabro/v2.2.10...openclaw-ynabro/v2.2.11) (2026-05-17)
 
 
