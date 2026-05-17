@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.2.3](https://github.com/jmcombs/ynabro/compare/openclaw-ynabro/v2.2.2...openclaw-ynabro/v2.2.3) (2026-05-17)
+
+
+### Bug Fixes
+
+* **openclaw-ynabro:** move @sinclair/typebox to dependencies ([5b90613](https://github.com/jmcombs/ynabro/commit/5b90613a14fb62f894dba12281d9a8ae20c09b63))
+* **openclaw-ynabro:** move @sinclair/typebox to dependencies + add install CI ([df982b9](https://github.com/jmcombs/ynabro/commit/df982b9a70f1ef2f4b649f8786bf3cc25b36dd5b))
+
 ## [2.2.2](https://github.com/jmcombs/ynabro/compare/openclaw-ynabro/v2.2.1...openclaw-ynabro/v2.2.2) (2026-05-17)
 
 
