@@ -18,8 +18,13 @@ If `ready` is `false`, walk the user through setup:
    - **pi:** Call `ynabro_setup` — it presents a native TUI input popup where the
      user enters the token directly. It goes straight to pi's AuthStorage and
      never appears in the conversation.
-   - **OpenClaw:** Instruct the user to add the token to `openclaw.json` or via
-     the OpenClaw settings UI, then ask them to confirm when done.
+   - **OpenClaw:** Instruct the user to store the token using
+     `openclaw secrets configure` (recommended) and select the
+     `plugins.entries.openclaw-ynabro.config.token` target. As alternatives,
+     they can set it non-interactively with
+     `openclaw config set plugins.entries.openclaw-ynabro.config.token --ref-source env|file|exec ...`,
+     or via the OpenClaw settings UI's sensitive "YNAB Personal Access Token"
+     field. Ask them to confirm when done.
 
 2. **Missing plan:** Call `ynabro_setup` to list available plans. Help the user
    pick one. On OpenClaw, follow up with `ynabro_save_default_plan`.

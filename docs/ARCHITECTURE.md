@@ -54,7 +54,7 @@ Example state structure:
 flowchart TD
     A[Tool execute called] --> B{api.pluginConfig.token set?}
     B -- Yes --> C[Use plugin config token]
-    B -- No --> D[Throw: configure token in openclaw.json]
+    B -- No --> D[Throw: configure token via `openclaw secrets configure`]
     C --> E[Return YnabroClient]
 ```
 
