@@ -1,6 +1,6 @@
 {
   "name": "openclaw-ynabro",
-  "version": "2.2.12",
+  "version": "2.2.13",
   "description": "OpenClaw plugin that registers YNABro tools for YNAB integration",
   "type": "module",
   "main": "./dist/index.js",
