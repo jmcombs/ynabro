@@ -1,6 +1,6 @@
 {
   "name": "pi-ynabro",
-  "version": "2.2.1",
+  "version": "2.2.2",
   "description": "Pi extension that registers YNABro tools for YNAB integration",
   "type": "module",
   "main": "./src/index.ts",
