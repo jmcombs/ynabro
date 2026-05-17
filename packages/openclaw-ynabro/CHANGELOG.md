@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.2.8](https://github.com/jmcombs/ynabro/compare/openclaw-ynabro/v2.2.7...openclaw-ynabro/v2.2.8) (2026-05-17)
+
+
+### Bug Fixes
+
+* **openclaw-ynabro:** inline plugin-sdk helpers to survive installer's "Repaired stale openclaw peer dependency" step ([#60](https://github.com/jmcombs/ynabro/issues/60)) ([01fdefa](https://github.com/jmcombs/ynabro/commit/01fdefa1dbd436a3b15c37f3eacf0a0160810ab2))
+
 ## [2.2.7](https://github.com/jmcombs/ynabro/compare/openclaw-ynabro/v2.2.6...openclaw-ynabro/v2.2.7) (2026-05-17)
 
 
