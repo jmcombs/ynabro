@@ -81,10 +81,12 @@ jobs:
           INSTALL_DIR=$(mktemp -d)
           cd "$INSTALL_DIR"
           echo '{"type":"module"}' > package.json
-          # Match the install flags used by `openclaw plugins install`.
-          # Also pull in openclaw itself -- at runtime the OpenClaw host provides
-          # this peer dep because plugins live inside its npm tree; in CI we
-          # have to install it explicitly so the plugin's SDK imports resolve.
+          # Mirror the exact flags used by `openclaw plugins install` (see
+          # docs.openclaw.ai/plugins/dependency-resolution). The plugin must
+          # declare `openclaw` in its own `dependencies` because
+          # peerDependencies and devDependencies are explicitly excluded by
+          # these flags — that's the documented contract, and the bug
+          # this test guards against (see openclaw/openclaw#70436).
           npm install \
             --omit=dev \
             --omit=peer \
@@ -92,8 +94,15 @@ jobs:
             --ignore-scripts \
             --no-audit \
             --no-fund \
-            "$OC_TARBALL" "$YN_TARBALL" \
-            'openclaw@^2026.4.24'
+            "$OC_TARBALL" "$YN_TARBALL"
+          echo "--- verifying openclaw resolves from the plugin's own tree ---"
+          if [ ! -d node_modules/openclaw ]; then
+            echo "FAIL: openclaw is not in the plugin's node_modules."
+            echo "This means the plugin did not declare 'openclaw' as a regular"
+            echo "dependency, and \`openclaw plugins install\` will fail at"
+            echo "runtime with 'Cannot find package openclaw'."
+            exit 1
+          fi
           echo "--- node_modules (top level) ---"
           ls node_modules/
           echo "--- Loading plugin entry (mirrors gateway startup) ---"
