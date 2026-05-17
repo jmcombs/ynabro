@@ -172,11 +172,6 @@ openclaw agents add ynabro-matchmaker \
   --agent-dir ~/.openclaw/agents/ynabro-matchmaker/agent \
   --non-interactive
 
-# Bind to your channel so the main channel session is created.
-# Check which channels are active first, then bind accordingly:
-openclaw channels status
-openclaw agents bind --agent ynabro-matchmaker --bind <channel>
-
 # Apply ynabro-specific skills.
 # agents add does not set skills — patch the entry directly.
 # Find the index of ynabro-matchmaker in your agents list first:
