@@ -1,5 +1,18 @@
 # Changelog
 
+## [2.2.0](https://github.com/jmcombs/ynabro/compare/pi-ynabro/v2.1.0...pi-ynabro/v2.2.0) (2026-05-17)
+
+
+### Features
+
+* **pi-ynabro:** add onboarding status tool and structured error handling ([3b34f43](https://github.com/jmcombs/ynabro/commit/3b34f43d024cd0b23075c32becc0d6721bca13b6))
+* unified onboarding flow with ynabro_onboarding_status tool ([9946b3b](https://github.com/jmcombs/ynabro/commit/9946b3ba6761c42f25b60779f5fb87f9ffaa01fa))
+
+
+### Bug Fixes
+
+* **pi-ynabro:** remove non-null assertions by refactoring helper functions ([92350dc](https://github.com/jmcombs/ynabro/commit/92350dc6b6e1cdbec4b5ef86763f4807f1fc5884))
+
 ## [2.1.0](https://github.com/jmcombs/ynabro/compare/pi-ynabro/v2.0.0...pi-ynabro/v2.1.0) (2026-05-16)
 
 

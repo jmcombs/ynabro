@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.2.0](https://github.com/jmcombs/ynabro/compare/openclaw-ynabro/v2.1.0...openclaw-ynabro/v2.2.0) (2026-05-17)
+
+
+### Features
+
+* **openclaw-ynabro:** add onboarding status tool and structured error handling ([aaf20ea](https://github.com/jmcombs/ynabro/commit/aaf20ea480d308091d0bab62ae70963cd1acfe95))
+* unified onboarding flow with ynabro_onboarding_status tool ([9946b3b](https://github.com/jmcombs/ynabro/commit/9946b3ba6761c42f25b60779f5fb87f9ffaa01fa))
+
 ## [2.1.0](https://github.com/jmcombs/ynabro/compare/openclaw-ynabro/v2.0.0...openclaw-ynabro/v2.1.0) (2026-05-16)
 
 
