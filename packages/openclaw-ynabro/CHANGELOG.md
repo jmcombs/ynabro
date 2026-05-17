@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.2.4](https://github.com/jmcombs/ynabro/compare/openclaw-ynabro/v2.2.3...openclaw-ynabro/v2.2.4) (2026-05-17)
+
+
+### Bug Fixes
+
+* replace file: workspace refs with version specs; catch in CI ([072eb92](https://github.com/jmcombs/ynabro/commit/072eb92bd5b77b877b5fa00e61b78c6ac0c35855))
+* replace file: workspace refs with version specs; catch in CI ([3256999](https://github.com/jmcombs/ynabro/commit/325699908ed373f612512b2a2d494e3bae666481))
+
 ## [2.2.3](https://github.com/jmcombs/ynabro/compare/openclaw-ynabro/v2.2.2...openclaw-ynabro/v2.2.3) (2026-05-17)
 
 
