@@ -264,201 +264,228 @@ export default definePluginEntry({
       return planId;
     }
 
-    api.registerTool({
-      name: "ynabro_onboarding_status",
-      label: "Onboarding Status",
-      description:
-        "Check whether YNABro is fully configured. Returns ready status, any missing configuration, and token generation instructions.",
-      parameters: Type.Object({}),
-      async execute() {
-        const status = await checkOnboardingStatus(openClawAdapter);
-        return ok(JSON.stringify(status));
-      },
-    });
+    api.registerTool(
+      (_ctx) => ({
+        name: "ynabro_onboarding_status",
+        label: "Onboarding Status",
+        description:
+          "Check whether YNABro is fully configured. Returns ready status, any missing configuration, and token generation instructions.",
+        parameters: Type.Object({}),
+        async execute() {
+          const status = await checkOnboardingStatus(openClawAdapter);
+          return ok(JSON.stringify(status));
+        },
+      }),
+      { names: ["ynabro_onboarding_status"] },
+    );
 
-    api.registerTool({
-      name: "ynabro_setup",
-      label: "Setup YNAB",
-      description:
-        "Fetch available YNAB plans for onboarding. Returns a list of plans. " +
-        "After the user selects one, call ynabro_save_default_plan with the chosen plan ID.",
-      parameters: Type.Object({}),
-      async execute() {
-        const client = getClient();
-        const plans = await client.getPlans();
-        if (plans.length === 0) {
-          return ok(
-            JSON.stringify({ error: "No plans found in your YNAB account." }),
-          );
-        }
-        return ok(
-          JSON.stringify({
-            plans: plans.map((p) => ({ id: p.id, name: p.name })),
-          }),
-        );
-      },
-    });
-
-    api.registerTool({
-      name: "ynabro_save_default_plan",
-      label: "Save Default Plan",
-      description:
-        "Save a YNAB plan as the default for all subsequent tool calls. " +
-        "Call ynabro_setup first to get the list of available plan IDs.",
-      parameters: saveDefaultPlanSchema,
-      async execute(_id, raw) {
-        try {
-          const p = params(raw);
+    api.registerTool(
+      (_ctx) => ({
+        name: "ynabro_setup",
+        label: "Setup YNAB",
+        description:
+          "Fetch available YNAB plans for onboarding. Returns a list of plans. " +
+          "After the user selects one, call ynabro_save_default_plan with the chosen plan ID.",
+        parameters: Type.Object({}),
+        async execute() {
           const client = getClient();
           const plans = await client.getPlans();
-          await setupYnab(client, plans, p.planId as string, openClawAdapter);
-          const saved = plans.find((plan) => plan.id === p.planId);
+          if (plans.length === 0) {
+            return ok(
+              JSON.stringify({ error: "No plans found in your YNAB account." }),
+            );
+          }
           return ok(
             JSON.stringify({
-              message: `Default plan set to: ${saved?.name ?? p.planId}`,
-              defaultPlanId: p.planId,
+              plans: plans.map((p) => ({ id: p.id, name: p.name })),
             }),
           );
-        } catch (_error) {
-          const status = await checkOnboardingStatus(openClawAdapter);
-          return ok(
-            JSON.stringify({
-              error: "onboarding_required",
-              ...status,
-            }),
-          );
-        }
-      },
-    });
+        },
+      }),
+      { names: ["ynabro_setup"] },
+    );
 
-    api.registerTool({
-      name: "ynabro_get_pending_transactions",
-      label: "Get Pending Transactions",
-      description: "Get all pending (uncategorized) transactions for a plan",
-      parameters: Type.Object({}),
-      async execute() {
-        try {
-          const [client, planId] = await Promise.all([
-            Promise.resolve(getClient()),
-            getDefaultPlanId(),
-          ]);
-          const result = await getPendingTransactions(client, planId);
-          return ok(JSON.stringify(result, null, 2));
-        } catch (_error) {
-          const status = await checkOnboardingStatus(openClawAdapter);
-          return ok(
-            JSON.stringify({
-              error: "onboarding_required",
-              ...status,
-            }),
-          );
-        }
-      },
-    });
+    api.registerTool(
+      (_ctx) => ({
+        name: "ynabro_save_default_plan",
+        label: "Save Default Plan",
+        description:
+          "Save a YNAB plan as the default for all subsequent tool calls. " +
+          "Call ynabro_setup first to get the list of available plan IDs.",
+        parameters: saveDefaultPlanSchema,
+        async execute(_id, raw) {
+          try {
+            const p = params(raw);
+            const client = getClient();
+            const plans = await client.getPlans();
+            await setupYnab(client, plans, p.planId as string, openClawAdapter);
+            const saved = plans.find((plan) => plan.id === p.planId);
+            return ok(
+              JSON.stringify({
+                message: `Default plan set to: ${saved?.name ?? p.planId}`,
+                defaultPlanId: p.planId,
+              }),
+            );
+          } catch (_error) {
+            const status = await checkOnboardingStatus(openClawAdapter);
+            return ok(
+              JSON.stringify({
+                error: "onboarding_required",
+                ...status,
+              }),
+            );
+          }
+        },
+      }),
+      { names: ["ynabro_save_default_plan"] },
+    );
 
-    api.registerTool({
-      name: "ynabro_get_recent_transactions",
-      label: "Get Recent Transactions",
-      description: "Get recent transactions for a plan",
-      parameters: Type.Object({}),
-      async execute() {
-        try {
-          const [client, planId] = await Promise.all([
-            Promise.resolve(getClient()),
-            getDefaultPlanId(),
-          ]);
-          const result = await getRecentTransactions(client, planId);
-          return ok(JSON.stringify(result, null, 2));
-        } catch (_error) {
-          const status = await checkOnboardingStatus(openClawAdapter);
-          return ok(
-            JSON.stringify({
-              error: "onboarding_required",
-              ...status,
-            }),
-          );
-        }
-      },
-    });
+    api.registerTool(
+      (_ctx) => ({
+        name: "ynabro_get_pending_transactions",
+        label: "Get Pending Transactions",
+        description: "Get all pending (uncategorized) transactions for a plan",
+        parameters: Type.Object({}),
+        async execute() {
+          try {
+            const [client, planId] = await Promise.all([
+              Promise.resolve(getClient()),
+              getDefaultPlanId(),
+            ]);
+            const result = await getPendingTransactions(client, planId);
+            return ok(JSON.stringify(result, null, 2));
+          } catch (_error) {
+            const status = await checkOnboardingStatus(openClawAdapter);
+            return ok(
+              JSON.stringify({
+                error: "onboarding_required",
+                ...status,
+              }),
+            );
+          }
+        },
+      }),
+      { names: ["ynabro_get_pending_transactions"] },
+    );
 
-    api.registerTool({
-      name: "ynabro_approve_transaction",
-      label: "Approve Transaction",
-      description: "Approve a specific transaction",
-      parameters: approveSchema,
-      async execute(_id, raw) {
-        try {
+    api.registerTool(
+      (_ctx) => ({
+        name: "ynabro_get_recent_transactions",
+        label: "Get Recent Transactions",
+        description: "Get recent transactions for a plan",
+        parameters: Type.Object({}),
+        async execute() {
+          try {
+            const [client, planId] = await Promise.all([
+              Promise.resolve(getClient()),
+              getDefaultPlanId(),
+            ]);
+            const result = await getRecentTransactions(client, planId);
+            return ok(JSON.stringify(result, null, 2));
+          } catch (_error) {
+            const status = await checkOnboardingStatus(openClawAdapter);
+            return ok(
+              JSON.stringify({
+                error: "onboarding_required",
+                ...status,
+              }),
+            );
+          }
+        },
+      }),
+      { names: ["ynabro_get_recent_transactions"] },
+    );
+
+    api.registerTool(
+      (_ctx) => ({
+        name: "ynabro_approve_transaction",
+        label: "Approve Transaction",
+        description: "Approve a specific transaction",
+        parameters: approveSchema,
+        async execute(_id, raw) {
+          try {
+            const p = params(raw);
+            const [client, planId] = await Promise.all([
+              Promise.resolve(getClient()),
+              getDefaultPlanId(),
+            ]);
+            await approveTransaction(client, planId, p.transactionId as string);
+            return ok(JSON.stringify({ success: true }));
+          } catch (_error) {
+            const status = await checkOnboardingStatus(openClawAdapter);
+            return ok(
+              JSON.stringify({
+                error: "onboarding_required",
+                ...status,
+              }),
+            );
+          }
+        },
+      }),
+      { names: ["ynabro_approve_transaction"] },
+    );
+
+    api.registerTool(
+      (_ctx) => ({
+        name: "ynabro_get_plan_info",
+        label: "Get Plan Info",
+        description: "Get basic information about a plan",
+        parameters: Type.Object({}),
+        async execute() {
+          try {
+            const [client, planId] = await Promise.all([
+              Promise.resolve(getClient()),
+              getDefaultPlanId(),
+            ]);
+            const result = await getPlanInfo(client, planId);
+            return ok(JSON.stringify(result, null, 2));
+          } catch (_error) {
+            const status = await checkOnboardingStatus(openClawAdapter);
+            return ok(
+              JSON.stringify({
+                error: "onboarding_required",
+                ...status,
+              }),
+            );
+          }
+        },
+      }),
+      { names: ["ynabro_get_plan_info"] },
+    );
+
+    api.registerTool(
+      (_ctx) => ({
+        name: "ynabro_get_skill_state",
+        label: "Get Skill State",
+        description:
+          "Get the current state for a skill, including memory and auto_approve_enabled flag",
+        parameters: skillStateSchema,
+        async execute(_id, raw) {
           const p = params(raw);
-          const [client, planId] = await Promise.all([
-            Promise.resolve(getClient()),
-            getDefaultPlanId(),
-          ]);
-          await approveTransaction(client, planId, p.transactionId as string);
-          return ok(JSON.stringify({ success: true }));
-        } catch (_error) {
-          const status = await checkOnboardingStatus(openClawAdapter);
-          return ok(
-            JSON.stringify({
-              error: "onboarding_required",
-              ...status,
-            }),
-          );
-        }
-      },
-    });
-
-    api.registerTool({
-      name: "ynabro_get_plan_info",
-      label: "Get Plan Info",
-      description: "Get basic information about a plan",
-      parameters: Type.Object({}),
-      async execute() {
-        try {
-          const [client, planId] = await Promise.all([
-            Promise.resolve(getClient()),
-            getDefaultPlanId(),
-          ]);
-          const result = await getPlanInfo(client, planId);
+          const result = await getSkillState(p.skillSlug as string);
           return ok(JSON.stringify(result, null, 2));
-        } catch (_error) {
-          const status = await checkOnboardingStatus(openClawAdapter);
-          return ok(
-            JSON.stringify({
-              error: "onboarding_required",
-              ...status,
-            }),
+        },
+      }),
+      { names: ["ynabro_get_skill_state"] },
+    );
+
+    api.registerTool(
+      (_ctx) => ({
+        name: "ynabro_update_skill_state",
+        label: "Update Skill State",
+        description:
+          "Update the state for a skill — merge partial updates into existing state",
+        parameters: updateSkillStateSchema,
+        async execute(_id, raw) {
+          const p = params(raw);
+          const result = await updateSkillState(
+            p.skillSlug as string,
+            p.updates as object,
           );
-        }
-      },
-    });
-
-    api.registerTool({
-      name: "ynabro_get_skill_state",
-      label: "Get Skill State",
-      description:
-        "Get the current state for a skill, including memory and auto_approve_enabled flag",
-      parameters: skillStateSchema,
-      async execute(_id, raw) {
-        const p = params(raw);
-        const result = await getSkillState(p.skillSlug as string);
-        return ok(JSON.stringify(result, null, 2));
-      },
-    });
-
-    api.registerTool({
-      name: "ynabro_update_skill_state",
-      label: "Update Skill State",
-      description:
-        "Update the state for a skill — merge partial updates into existing state",
-      parameters: updateSkillStateSchema,
-      async execute(_id, raw) {
-        const p = params(raw);
-        const result = await updateSkillState(
-          p.skillSlug as string,
-          p.updates as object,
-        );
-        return ok(JSON.stringify(result, null, 2));
-      },
-    });
+          return ok(JSON.stringify(result, null, 2));
+        },
+      }),
+      { names: ["ynabro_update_skill_state"] },
+    );
   },
 });
