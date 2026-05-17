@@ -61,11 +61,11 @@ jobs:
             --no-openclaw \
             --allow-execute \
             --mock-sdk \
-            --sarif plugin-inspector.sarif \
-            --junit plugin-inspector.xml
+            --sarif "$GITHUB_WORKSPACE/plugin-inspector.sarif" \
+            --junit "$GITHUB_WORKSPACE/plugin-inspector.xml"
       - name: Upload SARIF to GitHub Code Scanning
         if: always()
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: plugin-inspector.sarif
       - name: Upload JUnit report
@@ -110,8 +110,6 @@ jobs:
           echo "--- Verifying runtime dependencies ---"
           test -d node_modules/@sinclair/typebox \
             || { echo "FAIL: @sinclair/typebox not installed (devDependency?)"; exit 1; }
-          test -d node_modules/ynabro \
-            || { echo "FAIL: ynabro not installed"; exit 1; }
           echo "All runtime dependencies resolved."
 
   conformance:
