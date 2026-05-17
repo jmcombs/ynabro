@@ -148,6 +148,7 @@ import {
   getPlanInfo,
   getRecentTransactions,
   getSkillState,
+  setupYnab,
   updateSkillState,
   YnabroClient,
 } from "ynabro";
@@ -319,7 +320,9 @@ export default definePluginEntry({
             if (!planId) {
               throw new Error("planId is required");
             }
-            await openClawAdapter.setDefaultPlanId(planId);
+            // Pass undefined for plans — the agent already fetched them via
+            // ynabro_setup, so we skip the redundant getPlans() validation fetch.
+            await setupYnab(getClient(), undefined, planId, openClawAdapter);
             return ok(
               JSON.stringify({
                 message: `Default plan set to: ${planId}`,

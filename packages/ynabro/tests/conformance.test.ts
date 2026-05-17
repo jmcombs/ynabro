@@ -21,11 +21,15 @@ beforeAll(() => {
 });
 
 describe("openclaw-ynabro conformance", () => {
-  it("saves default plan via adapter.setDefaultPlanId (not a redundant getPlans fetch)", () => {
+  it("imports setupYnab from core", () => {
     expect(
       openClawSrc,
-      "openclaw-ynabro must call openClawAdapter.setDefaultPlanId() directly in ynabro_save_default_plan — calling setupYnab() fetches plans a second time unnecessarily",
-    ).toContain("setDefaultPlanId");
+      "openclaw-ynabro must import setupYnab from 'ynabro', not define it locally",
+    ).toContain("setupYnab");
+    expect(
+      openClawSrc,
+      "openclaw-ynabro must import setupYnab from 'ynabro', not define it locally",
+    ).toContain('from "ynabro"');
   });
 
   it("imports YnabroConfigAdapter from core", () => {
