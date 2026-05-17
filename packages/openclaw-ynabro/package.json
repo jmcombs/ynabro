@@ -39,11 +39,11 @@
   },
   "dependencies": {
     "@sinclair/typebox": "^0.34.49",
-    "openclaw": "^2026.4.24",
     "ynabro": "^2.2.0"
   },
   "devDependencies": {
     "@types/node": "^25.8.0",
+    "openclaw": "^2026.4.24",
     "typescript": "^6.0.3"
   },
   "scripts": {

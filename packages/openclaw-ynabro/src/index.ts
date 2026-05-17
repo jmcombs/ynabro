@@ -1,6 +1,91 @@
 import { Type } from "@sinclair/typebox";
-import { definePluginEntry } from "openclaw/plugin-sdk/plugin-entry";
+import type { OpenClawPluginApi } from "openclaw/plugin-sdk/plugin-entry";
 import type { YnabroConfigAdapter } from "ynabro";
+
+// Inlined `definePluginEntry` and `emptyPluginConfigSchema` from openclaw's
+// plugin SDK. We avoid the runtime `import { ... } from "openclaw/..."` because
+// `openclaw plugins install` has an undocumented post-install "Repaired stale
+// openclaw peer dependency" step that deletes `openclaw` from the plugin's
+// `node_modules` regardless of whether the plugin declares it as a
+// `dependency`. The resulting `Cannot find package 'openclaw'` ESM error
+// surfaces only as silent `toolNames: []` in `openclaw plugins inspect`.
+//
+// Type-only imports (`import type ...`) are erased at compile time and leave
+// no runtime trace, so they remain safe.
+//
+// Source: openclaw 2026.4.x `plugin-sdk/plugin-entry.js` and
+// `config-schema.js`. Behaviour mirrors the upstream helpers exactly.
+function emptyPluginConfigSchema() {
+  return {
+    safeParse(value: unknown) {
+      if (value === undefined) return { success: true, data: undefined };
+      if (!value || typeof value !== "object" || Array.isArray(value)) {
+        return { success: false, error: "expected config object" };
+      }
+      if (Object.keys(value as object).length > 0) {
+        return { success: false, error: "config must be empty" };
+      }
+      return { success: true, data: value };
+    },
+    jsonSchema: {
+      type: "object" as const,
+      additionalProperties: false,
+      properties: {},
+    },
+  };
+}
+
+type InlineDefinePluginEntryOptions = {
+  id: string;
+  name: string;
+  description: string;
+  kind?: unknown;
+  configSchema?: unknown;
+  reload?: unknown;
+  nodeHostCommands?: unknown;
+  securityAuditCollectors?: unknown;
+  register: (api: OpenClawPluginApi) => void;
+};
+
+function definePluginEntry({
+  id,
+  name,
+  description,
+  kind,
+  configSchema,
+  reload,
+  nodeHostCommands,
+  securityAuditCollectors,
+  register,
+}: InlineDefinePluginEntryOptions) {
+  const resolvedSchemaSource = configSchema ?? emptyPluginConfigSchema;
+  let resolved: unknown;
+  let resolvedOnce = false;
+  const getConfigSchema = () => {
+    if (!resolvedOnce) {
+      resolved =
+        typeof resolvedSchemaSource === "function"
+          ? (resolvedSchemaSource as () => unknown)()
+          : resolvedSchemaSource;
+      resolvedOnce = true;
+    }
+    return resolved;
+  };
+  return {
+    id,
+    name,
+    description,
+    ...(kind ? { kind } : {}),
+    ...(reload ? { reload } : {}),
+    ...(nodeHostCommands ? { nodeHostCommands } : {}),
+    ...(securityAuditCollectors ? { securityAuditCollectors } : {}),
+    get configSchema() {
+      return getConfigSchema();
+    },
+    register,
+  };
+}
+
 import {
   approveTransaction,
   checkOnboardingStatus,
