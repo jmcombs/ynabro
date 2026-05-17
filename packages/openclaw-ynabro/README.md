@@ -172,13 +172,20 @@ Add the following entry to the `agents.list` array in `~/.openclaw/openclaw.json
   "name": "ynabro-matchmaker",
 
   // Display name, emoji, and avatar shown in the OpenClaw dashboard.
-  // Use an https:// URL rather than a bare filename — workspace-relative
-  // paths are only resolvable by the local gateway, not by remote or mobile
-  // clients (e.g. Safari on iOS).
+  // Use a data: URI rather than a bare filename or https:// URL.
+  // Workspace-relative paths only resolve on the local gateway (breaks
+  // remote/mobile clients). Remote URLs are blocked by the Control UI
+  // image policy. A base64 data: URI is self-contained and works everywhere.
+  //
+  // Generate it from the installed plugin asset:
+  //   base64 -w 0 ~/.openclaw/npm/node_modules/openclaw-ynabro/logo.png
+  // Then set it:
+  //   openclaw agents set-identity --agent ynabro-matchmaker \\
+  //     --avatar "data:image/png;base64,<output>"
   "identity": {
     "name": "YNABro Matchmaker",
     "emoji": "🔁",
-    "avatar": "https://raw.githubusercontent.com/jmcombs/ynabro/main/packages/openclaw-ynabro/logo.png"
+    "avatar": "data:image/png;base64,<base64-encoded-logo>"
   },
 
   // Isolated workspace — this agent gets its own AGENTS.md, memory,
