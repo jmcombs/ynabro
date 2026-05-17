@@ -161,6 +161,29 @@ For YNAB-specific workflows (e.g. transaction review) it is recommended to creat
 
 ### Example: `ynabro-matchmaker`
 
+Use either the CLI or JSON variant below — they produce the same result.
+
+#### CLI
+
+```bash
+# Create the agent
+openclaw config set agents.list[0].id ynabro-matchmaker
+openclaw config set agents.list[0].name ynabro-matchmaker
+openclaw config set agents.list[0].workspace "~/.openclaw/workspace-ynabro-matchmaker"
+openclaw config set agents.list[0].agentDir "~/.openclaw/agents/ynabro-matchmaker/agent"
+openclaw config set agents.list[0].skills '["match-transactions"]'
+
+# Set identity — encode the avatar from the installed plugin asset
+AVATAR=$(base64 -w 0 ~/.openclaw/npm/node_modules/openclaw-ynabro/logo.png)
+openclaw agents set-identity --agent ynabro-matchmaker \
+  --name "YNABro Matchmaker" \
+  --emoji "🔁" \
+  --avatar "data:image/png;base64,$AVATAR"
+unset AVATAR
+```
+
+#### JSON
+
 Add the following entry to the `agents.list` array in `~/.openclaw/openclaw.json`:
 
 ```json
