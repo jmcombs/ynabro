@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.2.2](https://github.com/jmcombs/ynabro/compare/pi-ynabro/v2.2.1...pi-ynabro/v2.2.2) (2026-05-17)
+
+
+### Bug Fixes
+
+* **openclaw-ynabro:** trigger release for agent setup documentation fixes ([cdc3652](https://github.com/jmcombs/ynabro/commit/cdc36528af9bd910242cf2d3bc3e1e86f2faaf71))
+
 ## [2.2.1](https://github.com/jmcombs/ynabro/compare/pi-ynabro/v2.2.0...pi-ynabro/v2.2.1) (2026-05-17)
 
 
