@@ -1,46 +1,58 @@
-## Task 1: Refactor core `packages/ynabro` — export `YnabroConfigAdapter` and rewrite `setupYnab`
+## Task 1: Core library — `onboardingStatus.ts` + extend `YnabroConfigAdapter`
 
-## Status: ✅ COMPLETE
+Add `hasToken()` to the `YnabroConfigAdapter` interface and create the `checkOnboardingStatus()` core helper.
 
-## What Changed
+## Scope
 
-Completely refactored `packages/ynabro/src/tools/setupYnab.ts`:
-- Exported new `YnabroConfigAdapter` interface with two methods: `getDefaultPlanId()` and `setDefaultPlanId(planId)`
-- Rewrote `setupYnab` with 4-parameter signature: `(client, plans, selectedPlanId, adapter)`
-- Removed all file I/O code: fs, path, CONFIG_DIR, CONFIG_FILE, YnabConfig, ensureConfigDir, loadConfig, saveConfig
-- Implementation now validates selectedPlanId exists in plans array and delegates storage to the adapter
-- Added YnabroConfigAdapter to exports in `tools/index.ts` and main `index.ts`
+- `packages/ynabro/src/tools/setupYnab.ts` — add `hasToken(): Promise<boolean>` to the `YnabroConfigAdapter` interface
+- `packages/ynabro/src/tools/onboardingStatus.ts` — new file
+- `packages/ynabro/src/tools/index.ts` — export new symbols
 
-## Files Modified
+Not in scope: adapters, tests, docs, skill prompt.
 
-- `packages/ynabro/src/tools/setupYnab.ts` — complete rewrite
-- `packages/ynabro/src/tools/index.ts` — added YnabroConfigAdapter to exports
-- `packages/ynabro/src/index.ts` — added YnabroConfigAdapter to type exports
-- `packages/ynabro/dist/` — rebuilt with new exports
+Note: `src/index.ts` uses explicit named exports (not `export *`), so new symbols added to `tools/index.ts` must also be added to the export list in `src/index.ts`.
 
-## Verification Results
+## Definition of Done
 
-✅ `npm run typecheck -w packages/ynabro` — PASS
-✅ `grep "YnabroConfigAdapter" packages/ynabro/dist/index.d.ts` — FOUND
-✅ `npm run lint` — PASS (after auto-format)
-✅ `npm run build -w packages/ynabro` — SUCCESS
+**`setupYnab.ts`:**
+- `YnabroConfigAdapter` interface gains a third method: `hasToken(): Promise<boolean>`
+- No other changes to this file
 
-## Expected Side Effects
+**`onboardingStatus.ts` (new file):**
+- Exports `OnboardingStatus` interface:
+  ```ts
+  export interface OnboardingStatus {
+    ready: boolean;
+    missing: ('token' | 'plan')[];
+    tokenInstructions: string;
+    nextStep?: string;
+  }
+  ```
+- Exports `TOKEN_INSTRUCTIONS` string constant containing these exact four steps (may word the prose, but must include the URL):
+  ```
+  To generate a YNAB Personal Access Token:
+  1. Go to https://app.ynab.com/settings/developer
+  2. Click 'New Token'
+  3. Enter your YNAB password
+  4. Copy the token (it will only be shown once)
+  ```
+- Exports `checkOnboardingStatus(adapter: YnabroConfigAdapter): Promise<OnboardingStatus>`:
+  - Calls `adapter.hasToken()` and `adapter.getDefaultPlanId()` in parallel (Promise.all)
+  - Builds `missing` array: push `'token'` if no token, push `'plan'` if no planId
+  - `ready` is `true` only when `missing` is empty
+  - `tokenInstructions` is always `TOKEN_INSTRUCTIONS`
+  - `nextStep` is set to a brief action prompt when `ready` is `false`; omitted (undefined) when `ready` is `true`
 
-The downstream packages (`openclaw-ynabro` and `pi-ynabro`) now have type errors because they call the old `setupYnab()` signature. This is expected and will be resolved in:
-- Task 2: Update `openclaw-ynabro` to implement YnabroConfigAdapter
-- Task 3: Update `pi-ynabro` to implement YnabroConfigAdapter
+**`tools/index.ts`:**
+- Adds `export { checkOnboardingStatus, TOKEN_INSTRUCTIONS, type OnboardingStatus } from "./onboardingStatus.js";`
 
-## Commit
+## Verification
 
+```bash
+npm run typecheck -w packages/ynabro
+npm run build -w packages/ynabro
+grep "checkOnboardingStatus" packages/ynabro/dist/index.d.ts
+grep "OnboardingStatus" packages/ynabro/dist/index.d.ts
 ```
-refactor(ynabro): export YnabroConfigAdapter and rewrite setupYnab
 
-- Export YnabroConfigAdapter interface with getDefaultPlanId and setDefaultPlanId methods
-- Rewrite setupYnab to accept client, plans, selectedPlanId, and adapter parameters
-- Remove all fs/path-based config file I/O from setupYnab
-- setupYnab now validates planId exists and delegates storage to the adapter
-- Export YnabroConfigAdapter from main index for downstream packages
-```
-
-Commit: d9aa915
+All commands must exit 0 / produce the expected output.

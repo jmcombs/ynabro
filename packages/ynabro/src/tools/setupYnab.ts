@@ -2,6 +2,7 @@ import type { YnabroClient } from "../client/YnabroClient.js";
 import type { YnabPlan } from "../types/ynab.js";
 
 export interface YnabroConfigAdapter {
+  hasToken(): Promise<boolean>;
   getDefaultPlanId(): Promise<string | undefined>;
   setDefaultPlanId(planId: string): Promise<void>;
 }
