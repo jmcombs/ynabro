@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.2.9](https://github.com/jmcombs/ynabro/compare/openclaw-ynabro/v2.2.8...openclaw-ynabro/v2.2.9) (2026-05-17)
+
+
+### Bug Fixes
+
+* **openclaw-ynabro:** add pluginConfigSchema so register() is called and tools appear in toolNames ([#63](https://github.com/jmcombs/ynabro/issues/63)) ([aca1a0f](https://github.com/jmcombs/ynabro/commit/aca1a0fdaa51c254dbb0c42b4edfcb37181db8ff))
+
 ## [2.2.8](https://github.com/jmcombs/ynabro/compare/openclaw-ynabro/v2.2.7...openclaw-ynabro/v2.2.8) (2026-05-17)
 
 
