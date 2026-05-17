@@ -148,7 +148,6 @@ import {
   getPlanInfo,
   getRecentTransactions,
   getSkillState,
-  setupYnab,
   updateSkillState,
   YnabroClient,
 } from "ynabro";
@@ -316,14 +315,15 @@ export default definePluginEntry({
         async execute(_id, raw) {
           try {
             const p = params(raw);
-            const client = getClient();
-            const plans = await client.getPlans();
-            await setupYnab(client, plans, p.planId as string, openClawAdapter);
-            const saved = plans.find((plan) => plan.id === p.planId);
+            const planId = p.planId as string;
+            if (!planId) {
+              throw new Error("planId is required");
+            }
+            await openClawAdapter.setDefaultPlanId(planId);
             return ok(
               JSON.stringify({
-                message: `Default plan set to: ${saved?.name ?? p.planId}`,
-                defaultPlanId: p.planId,
+                message: `Default plan set to: ${planId}`,
+                defaultPlanId: planId,
               }),
             );
           } catch (_error) {
