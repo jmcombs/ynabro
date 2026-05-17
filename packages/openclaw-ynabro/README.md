@@ -22,17 +22,70 @@ After installation, restart the OpenClaw gateway to load the plugin:
 openclaw gateway restart
 ```
 
+## Tool Access
+
+OpenClaw's default `coding` tool profile only exposes core built-in tools. Plugin tools like `ynabro_*` must be explicitly allowed before agents can call them.
+
+### Global — all agents (recommended)
+
+Adds `openclaw-ynabro` tools to every agent on this gateway:
+
+```bash
+openclaw config set tools.alsoAllow '["openclaw-ynabro"]'
+openclaw gateway restart
+```
+
+This is the standard pattern used by OpenClaw plugins and the right choice for most installs.
+
+### Per-agent — scoped to one agent only
+
+If you want ynabro tools available only to a specific dedicated agent (and not your main session or other agents), add `tools.alsoAllow` to that agent's entry in `openclaw.json` instead:
+
+```json
+{
+  "agents": {
+    "list": [
+      {
+        "id": "ynabro-matchmaker",
+        "tools": {
+          "profile": "coding",
+          "alsoAllow": ["openclaw-ynabro"]
+        }
+      }
+    ]
+  }
+}
+```
+
+Or via the CLI:
+
+```bash
+openclaw config set tools.alsoAllow '["openclaw-ynabro"]'
+openclaw gateway restart
+```
+
+### Full profile — no restrictions (not recommended)
+
+Setting `tools.profile: "full"` removes all tool restrictions for an agent, giving access to every installed plugin — not just ynabro. Only use this if you intentionally want unrestricted tool access:
+
+```json
+{
+  "id": "ynabro-matchmaker",
+  "tools": { "profile": "full" }
+}
+```
+
 ## Available Tools
 
-- `ynabro_onboarding_status`
-- `ynabro_setup`
-- `ynabro_save_default_plan`
-- `ynabro_get_pending_transactions`
-- `ynabro_get_recent_transactions`
-- `ynabro_approve_transaction`
-- `ynabro_get_plan_info`
-- `ynabro_get_skill_state`
-- `ynabro_update_skill_state`
+- `ynabro_onboarding_status` — check whether the plugin is fully configured
+- `ynabro_setup` — fetch available YNAB plans for onboarding
+- `ynabro_save_default_plan` — persist the selected plan as the default
+- `ynabro_get_pending_transactions` — fetch all unapproved transactions
+- `ynabro_get_recent_transactions` — fetch recent transactions for context or audit
+- `ynabro_approve_transaction` — approve a specific transaction by ID
+- `ynabro_get_plan_info` — get basic plan metadata
+- `ynabro_get_skill_state` — read persistent skill state (memory, flags)
+- `ynabro_update_skill_state` — merge updates into persistent skill state
 
 ## Configuration
 
@@ -101,3 +154,58 @@ Run `ynabro_setup` to fetch your available YNAB plans, then `ynabro_save_default
 3. `ynabro_save_default_plan` with `{ planId: "<selected-id>" }` — persists the default
 
 After onboarding, all plan-dependent tools (`ynabro_get_pending_transactions`, `ynabro_get_recent_transactions`, `ynabro_approve_transaction`, `ynabro_get_plan_info`) resolve the plan automatically — no `planId` parameter required.
+
+## Dedicated Agent Setup
+
+For YNAB-specific workflows (e.g. transaction review) it is recommended to create a dedicated agent rather than running ynabro tools in your main session. This keeps YNAB context and memory isolated and prevents ynabro tools from appearing in unrelated conversations.
+
+### Example: `ynabro-matchmaker`
+
+Add the following entry to the `agents.list` array in `~/.openclaw/openclaw.json`:
+
+```json
+{
+  // Unique agent identifier used for routing and CLI commands
+  "id": "ynabro-matchmaker",
+
+  // Internal name used when listing agents via `openclaw agents list`
+  "name": "ynabro-matchmaker",
+
+  // Display name, emoji, and avatar shown in the OpenClaw dashboard
+  "identity": {
+    "name": "YNABro Matchmaker",
+    "emoji": "🔁",
+    "avatar": "logo.png"
+  },
+
+  // Isolated workspace — this agent gets its own AGENTS.md, memory,
+  // and context files completely separate from your main session
+  "workspace": "~/.openclaw/workspace-ynabro-matchmaker",
+
+  // Isolated session store and auth profiles for this agent
+  "agentDir": "~/.openclaw/agents/ynabro-matchmaker/agent",
+
+  // Skills to inject into the system prompt at session start.
+  // match-transactions is provided by the openclaw-ynabro plugin
+  // and guides the agent through the transaction review workflow.
+  "skills": ["match-transactions"],
+
+  // Scope ynabro tools to this agent only.
+  // Remove this block and use the global option in Tool Access above
+  // if you want ynabro tools available across all agents instead.
+  "tools": {
+    "profile": "coding",
+    "alsoAllow": ["openclaw-ynabro"]
+  }
+}
+```
+
+Then restart the gateway to apply:
+
+```bash
+openclaw gateway restart
+```
+
+Once the agent is running, start a conversation and type `/skill:match-transactions` to trigger the transaction review workflow, or say it naturally: _"match my transactions"_.
+
+> **Note:** Skills are loaded into the system prompt at session start. If you update a skill or change the agent config, type `/new` in the chat to start a fresh session and pick up the changes.
