@@ -32,19 +32,15 @@ const piConfigAdapter: YnabroConfigAdapter = {
   },
 };
 
-async function getClient(): Promise<YnabroClient | null> {
+async function getClient(): Promise<YnabroClient> {
   const token = await authStorage.getApiKey("ynab");
-  if (!token) {
-    return null;
-  }
+  if (!token) throw new Error("YNAB token not configured");
   return new YnabroClient(token);
 }
 
-async function getDefaultPlanId(): Promise<string | null> {
+async function getDefaultPlanId(): Promise<string> {
   const planId = await piConfigAdapter.getDefaultPlanId();
-  if (!planId) {
-    return null;
-  }
+  if (!planId) throw new Error("No default plan configured");
   return planId;
 }
 
@@ -125,7 +121,7 @@ export default function ynabroExtension(api: ExtensionAPI): void {
         getClient(),
         getDefaultPlanId(),
       ]);
-      const result = await getPendingTransactions(client!, planId!);
+      const result = await getPendingTransactions(client, planId);
       return {
         content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
         details: undefined,
@@ -159,7 +155,7 @@ export default function ynabroExtension(api: ExtensionAPI): void {
         getClient(),
         getDefaultPlanId(),
       ]);
-      const result = await getRecentTransactions(client!, planId!);
+      const result = await getRecentTransactions(client, planId);
       return {
         content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
         details: undefined,
@@ -193,7 +189,7 @@ export default function ynabroExtension(api: ExtensionAPI): void {
         getClient(),
         getDefaultPlanId(),
       ]);
-      await approveTransaction(client!, planId!, params.transactionId);
+      await approveTransaction(client, planId, params.transactionId);
       return {
         content: [{ type: "text", text: JSON.stringify({ success: true }) }],
         details: undefined,
@@ -227,7 +223,7 @@ export default function ynabroExtension(api: ExtensionAPI): void {
         getClient(),
         getDefaultPlanId(),
       ]);
-      const result = await getPlanInfo(client!, planId!);
+      const result = await getPlanInfo(client, planId);
       return {
         content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
         details: undefined,
