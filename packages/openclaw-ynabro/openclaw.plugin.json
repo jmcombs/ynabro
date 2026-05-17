@@ -22,16 +22,13 @@
       "label": "YNAB Personal Access Token",
       "placeholder": "your-ynab-personal-access-token",
       "sensitive": true,
-      "help": "Generate at https://app.ynab.com/settings/developer. Falls back to YNAB_TOKEN env var if not set here."
+      "help": "Generate at https://app.ynab.com/settings/developer. Store via `openclaw secrets configure` or `openclaw config set plugins.entries.openclaw-ynabro.config.token --ref-source env|file|exec --ref-provider <provider> --ref-id <id>`."
     }
   },
-  "setup": {
-    "providers": [
-      {
-        "id": "ynab",
-        "envVars": ["YNAB_TOKEN"]
-      }
-    ]
+  "configContracts": {
+    "secretInputs": {
+      "paths": [{ "path": "token", "expected": "string" }]
+    }
   },
   "contracts": {
     "tools": [
