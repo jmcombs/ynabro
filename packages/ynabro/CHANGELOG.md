@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.2.1](https://github.com/jmcombs/ynabro/compare/ynabro/v2.2.0...ynabro/v2.2.1) (2026-05-17)
+
+
+### Bug Fixes
+
+* **ynabro:** move ynab to dependencies; replace CI theatre with real load test ([7abbbf2](https://github.com/jmcombs/ynabro/commit/7abbbf29ae5a4c272a52d314901590e4f6ec9eb8))
+* **ynabro:** move ynab to dependencies; replace CI theatre with real load test ([1b7c162](https://github.com/jmcombs/ynabro/commit/1b7c162f66d24d5db9bcb6769c1cb52e8911d3e2))
+
 ## [2.2.0](https://github.com/jmcombs/ynabro/compare/ynabro/v2.1.0...ynabro/v2.2.0) (2026-05-17)
 
 
