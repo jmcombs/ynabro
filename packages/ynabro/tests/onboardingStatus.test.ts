@@ -2,9 +2,9 @@
  * Unit tests for checkOnboardingStatus.
  */
 
-import { describe, expect, it, vi } from "vitest";
-import { checkOnboardingStatus } from "../src/index.js";
+import { describe, expect, it } from "vitest";
 import type { YnabroConfigAdapter } from "../src/index.js";
+import { checkOnboardingStatus } from "../src/index.js";
 
 describe("checkOnboardingStatus", () => {
   it("returns ready: true and missing: [] when token and plan are present", async () => {
@@ -99,7 +99,7 @@ describe("checkOnboardingStatus", () => {
     expect(status.ready).toBe(false);
     expect(status.nextStep).toBeDefined();
     expect(typeof status.nextStep).toBe("string");
-    expect(status.nextStep!.length).toBeGreaterThan(0);
+    expect(status.nextStep?.length).toBeGreaterThan(0);
   });
 
   it("nextStep is undefined when ready is true", async () => {

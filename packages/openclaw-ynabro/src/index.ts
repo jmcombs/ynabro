@@ -1,6 +1,6 @@
 import { Type } from "@sinclair/typebox";
 import { definePluginEntry } from "openclaw/plugin-sdk/plugin-entry";
-import type { OnboardingStatus, YnabroConfigAdapter } from "ynabro";
+import type { YnabroConfigAdapter } from "ynabro";
 import {
   approveTransaction,
   checkOnboardingStatus,
@@ -178,7 +178,7 @@ export default definePluginEntry({
               defaultPlanId: p.planId,
             }),
           );
-        } catch (error) {
+        } catch (_error) {
           const status = await checkOnboardingStatus(openClawAdapter);
           return ok(
             JSON.stringify({
@@ -203,7 +203,7 @@ export default definePluginEntry({
           ]);
           const result = await getPendingTransactions(client, planId);
           return ok(JSON.stringify(result, null, 2));
-        } catch (error) {
+        } catch (_error) {
           const status = await checkOnboardingStatus(openClawAdapter);
           return ok(
             JSON.stringify({
@@ -228,7 +228,7 @@ export default definePluginEntry({
           ]);
           const result = await getRecentTransactions(client, planId);
           return ok(JSON.stringify(result, null, 2));
-        } catch (error) {
+        } catch (_error) {
           const status = await checkOnboardingStatus(openClawAdapter);
           return ok(
             JSON.stringify({
@@ -254,7 +254,7 @@ export default definePluginEntry({
           ]);
           await approveTransaction(client, planId, p.transactionId as string);
           return ok(JSON.stringify({ success: true }));
-        } catch (error) {
+        } catch (_error) {
           const status = await checkOnboardingStatus(openClawAdapter);
           return ok(
             JSON.stringify({
@@ -279,7 +279,7 @@ export default definePluginEntry({
           ]);
           const result = await getPlanInfo(client, planId);
           return ok(JSON.stringify(result, null, 2));
-        } catch (error) {
+        } catch (_error) {
           const status = await checkOnboardingStatus(openClawAdapter);
           return ok(
             JSON.stringify({
