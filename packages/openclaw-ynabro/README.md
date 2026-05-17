@@ -161,18 +161,27 @@ For YNAB-specific workflows (e.g. transaction review) it is recommended to creat
 
 ### Example: `ynabro-matchmaker`
 
-Use the CLI variant below — it initializes the agent properly including the directory structure, `agent.md`, and default channel binding. The JSON block is provided as a config reference only; manually adding it to `openclaw.json` without running `agents add` first will leave those missing.
+Use the CLI variant below — it initializes the agent properly including the directory structure and `agent.md`. The JSON block is provided as a config reference only; manually adding it to `openclaw.json` without running `agents add` first will leave those missing.
 
 #### CLI (recommended)
 
 ```bash
-# Initialize the agent — creates directory structure, agent.md, and default channel binding
+# Initialize the agent — creates directory structure and agent.md
 openclaw agents add ynabro-matchmaker \
   --workspace ~/.openclaw/workspace-ynabro-matchmaker \
   --agent-dir ~/.openclaw/agents/ynabro-matchmaker/agent \
   --non-interactive
 
-# Apply ynabro-specific config
+# Bind to your channel so the main channel session is created.
+# Check which channels are active first, then bind accordingly:
+openclaw channels status
+openclaw agents bind --agent ynabro-matchmaker --bind <channel>
+
+# Apply ynabro-specific skills.
+# agents add does not set skills — patch the entry directly.
+# Find the index of ynabro-matchmaker in your agents list first:
+openclaw config get agents.list
+# Then set skills using its index (replace 0 with the correct index):
 openclaw config set agents.list[0].skills '["match-transactions"]'
 
 # Set identity — encode the avatar from the installed plugin asset
@@ -186,7 +195,7 @@ unset AVATAR
 
 #### JSON (reference only)
 
-> **Note:** If you add this entry manually, also run `openclaw agents add ynabro-matchmaker --workspace ~/.openclaw/workspace-ynabro-matchmaker --non-interactive` first to initialize the agent directory and channel binding. The JSON alone is not sufficient.
+> **Note:** If you add this entry manually, also run `openclaw agents add ynabro-matchmaker --workspace ~/.openclaw/workspace-ynabro-matchmaker --non-interactive` first to initialize the agent directory, then `openclaw agents bind --agent ynabro-matchmaker --bind web` to create the channel binding. The JSON alone is not sufficient.
 
 Add the following entry to the `agents.list` array in `~/.openclaw/openclaw.json`:
 
