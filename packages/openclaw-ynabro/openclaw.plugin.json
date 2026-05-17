@@ -8,8 +8,8 @@
     "additionalProperties": false,
     "properties": {
       "token": {
-        "type": "string",
-        "description": "YNAB Personal Access Token"
+        "type": ["string", "object"],
+        "description": "YNAB Personal Access Token. May be a plaintext string or a SecretRef object { source, provider, id } configured via `openclaw secrets configure` or `openclaw config set ... --ref-source ...`."
       },
       "defaultPlanId": {
         "type": "string",

@@ -30,8 +30,18 @@ describe("openclaw.plugin.json", () => {
   });
 
   describe("configSchema", () => {
-    it("declares both token and defaultPlanId as string properties", () => {
-      expect(manifest.configSchema?.properties?.token?.type).toBe("string");
+    it("declares token as accepting either a plaintext string or a SecretRef object", () => {
+      // OpenClaw's config validator requires SecretRef-eligible fields to accept
+      // both "string" (plaintext) and "object" (SecretRef { source, provider, id }).
+      // Declaring only "string" causes `openclaw config set --ref-source ...` to
+      // fail with `invalid config: must be string`. Matches the stock comfy plugin
+      // pattern for its `apiKey` field.
+      const tokenType = manifest.configSchema?.properties?.token?.type;
+      expect(Array.isArray(tokenType)).toBe(true);
+      expect(tokenType).toEqual(expect.arrayContaining(["string", "object"]));
+    });
+
+    it("declares defaultPlanId as a plaintext string (non-secret)", () => {
       expect(manifest.configSchema?.properties?.defaultPlanId?.type).toBe(
         "string",
       );
