@@ -1,192 +1,235 @@
 ## Goal
 
-Export `YnabroConfigAdapter` from the core `ynabro` library, refactor `setupYnab` to use it, wire both adapters to shared core code with only platform-specific glue living locally, cover the new contract with unit and conformance tests, wire those tests into CI, and update all documentation to reflect the current state of the project.
+Implement the unified onboarding flow designed in `docs/ONBOARDING_DESIGN.md`: add `hasToken()` to `YnabroConfigAdapter`, add the core `checkOnboardingStatus()` helper, register `ynabro_onboarding_status` on both platforms, convert configuration-missing errors to structured JSON responses, update tests, the skill prompt, and documentation.
 
 ---
 
 ## Tasks
 
-### Task 1: Refactor core `packages/ynabro` — export `YnabroConfigAdapter` and rewrite `setupYnab`
+### Task 1: Core library — `onboardingStatus.ts` + extend `YnabroConfigAdapter`
 
-Remove all `.ynabro/config.json` file I/O from the core library. Export `YnabroConfigAdapter`. Rewrite `setupYnab` to accept the adapter. Build core so downstream adapters pick up new types.
+Add `hasToken()` to the `YnabroConfigAdapter` interface. Create `packages/ynabro/src/tools/onboardingStatus.ts` with the `OnboardingStatus` type, static `TOKEN_INSTRUCTIONS` constant, and `checkOnboardingStatus()` function. Export everything and rebuild.
 
-**Scope:** `packages/ynabro/src/tools/setupYnab.ts`, `packages/ynabro/src/index.ts`, `npm run build -w packages/ynabro`
-**Not in scope:** `packages/openclaw-ynabro/`, `packages/pi-ynabro/`, tests
+**Scope:** `packages/ynabro/src/tools/setupYnab.ts`, `packages/ynabro/src/tools/onboardingStatus.ts` (new), `packages/ynabro/src/tools/index.ts`
+**Not in scope:** Adapters, tests, docs, skill prompt
 
 **Definition of Done:**
-- `YnabroConfigAdapter` interface (`getDefaultPlanId(): Promise<string | undefined>`, `setDefaultPlanId(planId: string): Promise<void>`) exported from `packages/ynabro/src/index.ts`
-- `setupYnab(client: YnabroClient, plans: YnabPlan[], selectedPlanId: string, adapter: YnabroConfigAdapter): Promise<void>` — validates `selectedPlanId` is in `plans`, throws if not, calls `adapter.setDefaultPlanId(selectedPlanId)`, returns void
-- All `fs`, `path`, `.ynabro/config.json`, `process.env.YNAB_TOKEN` references removed from `setupYnab.ts`
-- `packages/ynabro/dist/` rebuilt; `dist/index.d.ts` exports `YnabroConfigAdapter`
+- `YnabroConfigAdapter` in `setupYnab.ts` has `hasToken(): Promise<boolean>` as a third method
+- `onboardingStatus.ts` exports:
+  - `OnboardingStatus` interface: `{ ready: boolean; missing: ('token' | 'plan')[]; tokenInstructions: string; nextStep?: string }`
+  - `TOKEN_INSTRUCTIONS` constant: static multi-line string with the four-step YNAB PAT generation instructions (URL: `https://app.ynab.com/settings/developer`)
+  - `checkOnboardingStatus(adapter: YnabroConfigAdapter): Promise<OnboardingStatus>` — calls `adapter.hasToken()` and `adapter.getDefaultPlanId()`, builds and returns the status object; includes `nextStep` only when `ready` is `false`
+- `tools/index.ts` exports `checkOnboardingStatus` and `type OnboardingStatus` from `./onboardingStatus.js`
 - `npm run typecheck -w packages/ynabro` passes
+- `npm run build -w packages/ynabro` succeeds; `dist/index.d.ts` exports `checkOnboardingStatus` and `OnboardingStatus`
 
-**Verification:** `npm run typecheck -w packages/ynabro && npm run build -w packages/ynabro && grep "YnabroConfigAdapter" packages/ynabro/dist/index.d.ts`
+**Verification:** `npm run typecheck -w packages/ynabro && npm run build -w packages/ynabro && grep "checkOnboardingStatus" packages/ynabro/dist/index.d.ts`
 
 ---
 
-### Task 2: Rewrite `packages/openclaw-ynabro/src/index.ts` — implement adapter, two-step setup, remove env var fallback
+### Task 2: `openclaw-ynabro` adapter — `hasToken`, `ynabro_onboarding_status`, structured errors
+
+Three targeted changes to `packages/openclaw-ynabro/src/index.ts` plus a one-line addition to `openclaw.plugin.json`.
 
 **Scope:** `packages/openclaw-ynabro/src/index.ts`, `packages/openclaw-ynabro/openclaw.plugin.json`
 **Not in scope:** `packages/ynabro/`, `packages/pi-ynabro/`
 **Prerequisite:** Task 1 build complete
 
 **Definition of Done:**
-- `YnabroConfigAdapter` + `setupYnab` imported from `"ynabro"`; old local `setupYnab()` call removed
-- `openClawAdapter: YnabroConfigAdapter` defined inside `register(api)` with: closure-scoped `cachedPlanId` for in-session reads; `getDefaultPlanId()` checks cache then `api.pluginConfig.defaultPlanId`; `setDefaultPlanId()` updates cache and calls `api.runtime.config.mutateConfigFile({ afterWrite: { mode: "auto" }, mutate: ... })` writing to `draft.plugins.entries["openclaw-ynabro"].config.defaultPlanId`
-- `getClient()` reads `api.pluginConfig.token` only — throws `"YNAB token not configured. Set it via plugins.entries.openclaw-ynabro.config.token in openclaw.json."` if absent — **no `process.env.YNAB_TOKEN`**
-- `getDefaultPlanId()` wrapper throws `"No default plan configured. Run ynabro_setup then ynabro_save_default_plan to complete onboarding."` if absent
-- `planIdSchema` fully removed; all four plan-dependent tools (`ynabro_get_pending_transactions`, `ynabro_get_recent_transactions`, `ynabro_approve_transaction`, `ynabro_get_plan_info`) have `Type.Object({})` parameters and call `getDefaultPlanId()` internally
-- `ynabro_setup` (no params): fetches plans, returns `{ plans: [{id, name}] }` JSON
-- `ynabro_save_default_plan` (`planId: string` param): fetches plans for validation, calls `setupYnab(client, plans, planId, openClawAdapter)`, returns success message
-- `ynabro_save_default_plan` added to `contracts.tools` in `openclaw.plugin.json`
+- `checkOnboardingStatus` and `type OnboardingStatus` imported from `"ynabro"`
+- `openClawAdapter` has `hasToken(): Promise<boolean>` that returns `!!(api.pluginConfig as { token?: string } | undefined)?.token`
+- `ynabro_onboarding_status` tool registered with `Type.Object({})` parameters; its `execute()` calls `checkOnboardingStatus(openClawAdapter)` and returns the result as JSON via `ok(...)`
+- `getClient()` and `getDefaultPlanId()` changed so that, on missing config, they do NOT throw — instead, plan-dependent tool `execute()` handlers detect unconfigured state (via any pattern the implementor chooses: union return type, custom error class + catch, or equivalent) and return `ok(JSON.stringify({ error: "onboarding_required", ...status }))` to the caller
+- All five plan-dependent tools (`ynabro_get_pending_transactions`, `ynabro_get_recent_transactions`, `ynabro_approve_transaction`, `ynabro_get_plan_info`, `ynabro_save_default_plan`) return structured JSON on missing config — no unhandled throws reach the LLM as raw error strings
+- `ynabro_onboarding_status` added to `contracts.tools` in `openclaw.plugin.json`
 - `npm run typecheck -w packages/openclaw-ynabro` passes
 
-**Verification:** `npm run typecheck -w packages/openclaw-ynabro && grep -c "planIdSchema" packages/openclaw-ynabro/src/index.ts && grep "process.env" packages/openclaw-ynabro/src/index.ts`
+**Verification:** `npm run typecheck -w packages/openclaw-ynabro && grep "ynabro_onboarding_status" packages/openclaw-ynabro/openclaw.plugin.json`
 
 ---
 
-### Task 3: Update `packages/pi-ynabro/src/index.ts` — import adapter and `setupYnab` from core
+### Task 3: `pi-ynabro` adapter — `hasToken`, `ynabro_onboarding_status`, structured errors
 
-Three targeted edits only. All interactive UI logic unchanged.
+Three targeted changes to `packages/pi-ynabro/src/index.ts`, mirroring the pattern from Task 2 with pi-specific storage.
 
 **Scope:** `packages/pi-ynabro/src/index.ts` only
-**Not in scope:** Everything else
+**Not in scope:** `packages/ynabro/`, `packages/openclaw-ynabro/`
 **Prerequisite:** Task 1 build complete
 
 **Definition of Done:**
-- `import type { YnabroConfigAdapter } from "ynabro"` present; `setupYnab` added to named imports from `"ynabro"`
-- Local `interface YnabroConfigAdapter { ... }` block removed
-- `ynabro_setup` calls `await setupYnab(client, plans, selectedPlan.id, piConfigAdapter)` instead of `await piConfigAdapter.setDefaultPlanId(selectedPlan.id)`
-- No other changes to the file
+- `checkOnboardingStatus` and `type OnboardingStatus` added to the named imports from `"ynabro"`
+- `piConfigAdapter` has `hasToken(): Promise<boolean>` that returns `!!(await authStorage.getApiKey("ynab"))`
+- `ynabro_onboarding_status` tool registered with `Type.Object({})` parameters; its `execute()` calls `checkOnboardingStatus(piConfigAdapter)` and returns the result as JSON
+- `getClient()` and `getDefaultPlanId()` changed so that, on missing config, plan-dependent tool `execute()` handlers return `{ content: [{ type: "text", text: JSON.stringify({ error: "onboarding_required", ...status }) }], details: undefined }` instead of allowing raw throws to surface to the LLM
+- All four plan-dependent tools (`ynabro_get_pending_transactions`, `ynabro_get_recent_transactions`, `ynabro_approve_transaction`, `ynabro_get_plan_info`) return structured JSON on missing config
 - `npm run typecheck -w packages/pi-ynabro` passes
 
-**Verification:** `npm run typecheck -w packages/pi-ynabro && grep "interface YnabroConfigAdapter" packages/pi-ynabro/src/index.ts`
+**Verification:** `npm run typecheck -w packages/pi-ynabro`
 
 ---
 
-### Task 4: Unit tests for `setupYnab` and `YnabroConfigAdapter` in `packages/ynabro/tests/`
+### Task 4: Unit tests — `onboardingStatus.test.ts` + update `setupYnab.test.ts`
 
-Add `packages/ynabro/tests/setupYnab.test.ts` covering the new four-parameter `setupYnab` API. Update `smoke.test.ts` to add export checks for the new exports. All existing smoke tests must continue to pass.
+Add a new test file for `checkOnboardingStatus()` and update all mock adapters in `setupYnab.test.ts` to include `hasToken`.
 
-**Scope:** `packages/ynabro/tests/setupYnab.test.ts` (new), `packages/ynabro/tests/smoke.test.ts` (add export checks)
-**Not in scope:** Adapter source files; conformance tests (Task 5)
+**Scope:** `packages/ynabro/tests/onboardingStatus.test.ts` (new), `packages/ynabro/tests/setupYnab.test.ts` (update mocks)
+**Not in scope:** `conformance.test.ts` (Task 5), adapter source files
 **Prerequisite:** Task 1 complete
 
 **Definition of Done:**
-- `setupYnab.test.ts` contains tests for: stores correct planId via adapter; calls `setDefaultPlanId` exactly once with the correct value; throws when `selectedPlanId` not in `plans`; error message includes both the invalid ID and the valid IDs; does not throw for valid selection from a multi-plan list; works with a single-plan list
-- `smoke.test.ts` adds: `setupYnab` is exported and is a function; the existing three tests still pass
-- `npm run test -w packages/ynabro` passes (all tests green)
+- Every `YnabroConfigAdapter` mock object in `setupYnab.test.ts` has `hasToken: async () => false` (or `true` where semantically appropriate) — TypeScript must not complain about missing property
+- `onboardingStatus.test.ts` covers:
+  - `ready: true, missing: []` when `hasToken()` returns `true` and `getDefaultPlanId()` returns a string
+  - `ready: false, missing: ["token", "plan"]` when both absent
+  - `ready: false, missing: ["token"]` when only token absent
+  - `ready: false, missing: ["plan"]` when token present but plan absent
+  - `tokenInstructions` is always a non-empty string
+  - `tokenInstructions` contains `https://app.ynab.com/settings/developer`
+  - `nextStep` is present (non-empty string) when `ready` is `false`
+  - `nextStep` is absent (undefined) when `ready` is `true`
+- `npm run test -w packages/ynabro` passes (all test files green)
 
 **Verification:** `npm run test -w packages/ynabro`
 
 ---
 
-### Task 5: Cross-plugin conformance tests + CI update
+### Task 5: Conformance test updates
 
-Add `packages/ynabro/tests/conformance.test.ts` with static-analysis tests that read adapter source files and assert structural constraints. Update `.github/workflows/ci.yml` to add an explicit `conformance` job.
+Extend `packages/ynabro/tests/conformance.test.ts` with four new assertions covering `hasToken` and `ynabro_onboarding_status` on both adapters.
 
-**Scope:** `packages/ynabro/tests/conformance.test.ts` (new), `.github/workflows/ci.yml`
-**Not in scope:** Adapter source files; unit tests (Task 4)
-**Prerequisite:** Tasks 1–3 complete (tests must pass against the final state of the adapter files)
+**Scope:** `packages/ynabro/tests/conformance.test.ts` only
+**Not in scope:** Adapter source files, unit tests (Task 4)
+**Prerequisite:** Tasks 2 and 3 complete (assertions run against the updated adapter files)
 
 **Definition of Done:**
-- `conformance.test.ts` asserts for each adapter (`openclaw-ynabro/src/index.ts`, `pi-ynabro/src/index.ts`):
-  - File imports `setupYnab` from `"ynabro"` (not defined locally)
-  - File imports `YnabroConfigAdapter` from `"ynabro"` (not defined locally)
-  - File does NOT contain `interface YnabroConfigAdapter` (no local redefinition)
-  - File does NOT contain `process.env.YNAB_TOKEN` (no env var reads)
-  - File does NOT contain `.ynabro/config.json` or `CONFIG_FILE` (no legacy file paths)
-  - For `openclaw-ynabro` only: file does NOT contain `planIdSchema` (schema was removed)
-- Each assertion has a clear failure message indicating exactly what divergence was detected
-- `ci.yml` adds a `conformance` job that runs after `check`, with: `npm ci`, `npm run build`, then `npm run test -w packages/ynabro -- --reporter=verbose` (or equivalent vitest CLI) with a step name `"Cross-plugin conformance tests"`
-- `npm run test -w packages/ynabro` passes (all conformance tests green)
+- `openclaw-ynabro` conformance suite adds:
+  - `openClawAdapter` implements `hasToken` (assert `openClawSrc` contains `hasToken`)
+  - `ynabro_onboarding_status` tool is registered (assert `openClawSrc` contains `"ynabro_onboarding_status"`)
+- `pi-ynabro` conformance suite adds:
+  - `piConfigAdapter` implements `hasToken` (assert `piSrc` contains `hasToken`)
+  - `ynabro_onboarding_status` tool is registered (assert `piSrc` contains `"ynabro_onboarding_status"`)
+- Each new assertion includes a descriptive failure message
+- `npm run test -w packages/ynabro` passes (all 4 new conformance assertions green, existing 13 still pass)
 
-**Verification:** `npm run test -w packages/ynabro`
+**Verification:** `npm run test -w packages/ynabro -- --reporter=verbose`
 
 ---
 
-### Task 6: Documentation — all READMEs, `docs/TOOLS.md`, `docs/ARCHITECTURE.md`
+### Task 6: Skill prompt + documentation
 
-**Scope:** `README.md` (root), `packages/openclaw-ynabro/README.md`, `packages/pi-ynabro/README.md`, `docs/TOOLS.md`, `docs/ARCHITECTURE.md`
-**Not in scope:** Source code, tests, CI (handled in Task 5)
-**Prerequisite:** All code tasks complete
+Rewrite the `Onboarding & Access` section of the skill prompt and update `docs/TOOLS.md` and `docs/ARCHITECTURE.md`.
+
+**Scope:** `skills/ynabro/prompts/ynabro.md`, `docs/TOOLS.md`, `docs/ARCHITECTURE.md`
+**Not in scope:** Package READMEs, source code, tests
 
 **Definition of Done:**
 
-Root `README.md`:
-- Quick start example updated to use `setupYnab(client, plans, selectedPlanId, adapter)` pattern, not direct `planId` in tool calls
-- References to `process.env.YNAB_TOKEN` removed from example
-
-`packages/openclaw-ynabro/README.md`:
-- Available Tools list includes `ynabro_save_default_plan`; removes any `planId` parameter description from plan-dependent tools
-- Configuration section: removes env var fallback; states token comes exclusively from `plugins.entries.openclaw-ynabro.config.token`
-- Adds Onboarding section describing the two-step flow: call `ynabro_setup`, then `ynabro_save_default_plan` with the chosen ID
-
-`packages/pi-ynabro/README.md`:
-- Requirements section: replaces `YNAB_TOKEN environment variable must be set` with: token is stored in pi's AuthStorage via `ynabro_setup` (interactive)
-- Available Tools list stays the same (no `ynabro_save_default_plan` — pi uses a single-step flow)
+`skills/ynabro/prompts/ynabro.md` — replace the `## Onboarding & Access` section with:
+- Instruction to call `ynabro_onboarding_status` before any YNAB operation
+- If `ready: false`: share `tokenInstructions`; platform-specific token storage (pi: `ynabro_setup` TUI popup — never the chat; OpenClaw: `openclaw.json` or settings UI); then call `ynabro_setup` for plans and `ynabro_save_default_plan` (OpenClaw) to store selection
+- After onboarding: fulfill the original request immediately
+- If a tool returns `{ "error": "onboarding_required" }`: treat same as a failed status check, initiate onboarding, then retry
+- Remove all references to `YNAB_TOKEN` env var
 
 `docs/TOOLS.md`:
-- Authentication section updated: `openclaw-ynabro` uses plugin config only (no env var); `pi-ynabro` uses AuthStorage
-- `ynabro_setup` entry distinguishes OpenClaw (returns plan list) vs. pi (interactive, one step)
-- New `ynabro_save_default_plan` entry (OpenClaw only) with parameters, return value, and usage note
-- Plan-dependent tool entries note that `planId` is no longer a parameter — resolved from stored default
+- Add `ynabro_onboarding_status` entry (both platforms): no parameters; returns `OnboardingStatus` JSON; describes `ready`, `missing`, `tokenInstructions`, `nextStep` fields
+- Update plan-dependent tool entries to note they return `{ error: "onboarding_required" }` instead of throwing when unconfigured
 
 `docs/ARCHITECTURE.md`:
-- Token resolution flowchart updated to single-source (plugin config only for OpenClaw; AuthStorage for pi)
-- Removes "corrected in issue #32" note
-- Adds `YnabroConfigAdapter` section: interface definition, per-platform storage table, how `setupYnab` uses it
+- Add `hasToken()` to the `YnabroConfigAdapter` interface block
+- Add `checkOnboardingStatus()` to the adapter description table
+- Add a new **Onboarding Detection** section describing the two-layer strategy (prompt-driven + structured error)
 
-**Verification:** Manual review — no `npm run check` required
+**Verification:** Manual review — `npm run check` not required for docs/prompt changes, but `npm run check` must still pass overall.
 
 ---
 
 ## Acceptance Criteria
 
-- `YnabroConfigAdapter` exported from `packages/ynabro/src/index.ts`; `dist/index.d.ts` confirms after build
-- `setupYnab` in core: four-param signature; validates planId in plans; delegates to adapter; zero file I/O; zero env var reads
-- `openclaw-ynabro`: no `planIdSchema`; no `process.env.YNAB_TOKEN`; `ynabro_setup` returns plan list; `ynabro_save_default_plan` registered and in `contracts.tools`; `openClawAdapter` uses `mutateConfigFile` for persistence + closure cache for in-session reads
-- `pi-ynabro`: no local `interface YnabroConfigAdapter`; imports type and `setupYnab` from `"ynabro"`; calls `setupYnab(client, plans, selectedPlan.id, piConfigAdapter)` at storage step
-- `packages/ynabro/tests/setupYnab.test.ts` exists and covers happy path + error cases
-- `packages/ynabro/tests/conformance.test.ts` exists and catches any regression that reintroduces local adapter duplication, env var reads, or legacy file paths
-- CI `conformance` job exists in `ci.yml` and runs the conformance suite explicitly
-- All READMEs and docs reflect current behavior
-- `npm run check` exits 0 (lint + typecheck + all tests pass)
+- `YnabroConfigAdapter` has `hasToken(): Promise<boolean>` in its definition in `setupYnab.ts`
+- `packages/ynabro/src/tools/onboardingStatus.ts` exists and exports `checkOnboardingStatus`, `OnboardingStatus`, `TOKEN_INSTRUCTIONS`
+- `checkOnboardingStatus` is re-exported from `packages/ynabro/src/index.ts` (via `tools/index.ts`)
+- Both adapters implement `hasToken()` using their platform's token storage
+- Both adapters register `ynabro_onboarding_status` as a tool
+- `openclaw.plugin.json` lists `ynabro_onboarding_status` in `contracts.tools`
+- All plan-dependent tools on both platforms return `{ error: "onboarding_required", ... }` JSON — no raw throws reaching the LLM — when token or plan is missing
+- `packages/ynabro/tests/onboardingStatus.test.ts` exists with ≥ 8 test cases
+- All `YnabroConfigAdapter` mocks in `setupYnab.test.ts` include `hasToken`
+- `conformance.test.ts` has 4 new assertions (hasToken + ynabro_onboarding_status for each adapter)
+- `skills/ynabro/prompts/ynabro.md` has no `YNAB_TOKEN` references; contains `ynabro_onboarding_status` instruction
+- `npm run check` exits 0 (all workspaces typecheck + all tests pass)
 
 ## Non-goals
 
-- No changes to `getSkillState` / `updateSkillState`
-- No migration from `YNAB_TOKEN` env var in `openclaw-ynabro` — clean break
-- No new Vitest config in `openclaw-ynabro` or `pi-ynabro` — tests live in `packages/ynabro/tests/`
-- No semver bump decisions — release-please handles that
+- No changes to `ynabro_setup` tool on pi (interactive flow is already correct)
+- No changes to `ynabro_setup` or `ynabro_save_default_plan` on OpenClaw
+- No token validation (API call) — `hasToken()` is presence-check only (Phase 1 scope)
+- No changes to `YnabroClient` or any core tool function (`getPendingTransactions`, etc.)
+- No package README changes in this spec (docs/TOOLS.md and docs/ARCHITECTURE.md only)
+- No semver decisions
 
 ## Assumptions
 
-- `packages/ynabro/dist/` must be rebuilt after Task 1 before Tasks 2–4 can typecheck successfully
-- Vitest `include: ["tests/**/*.test.ts"]` in `packages/ynabro/vitest.config.ts` picks up all new test files in `packages/ynabro/tests/` automatically
-- Root `npm run check` → `npm run test --workspaces --if-present` already runs `packages/ynabro` tests; the CI conformance job is additive (explicit, not replacing)
-- `api.runtime.config.mutateConfigFile({ afterWrite: { mode: "auto" }, ... })` is safe in an OpenClaw tool execute handler (confirm? — implementor should verify against SDK type surface)
-- `api.pluginConfig` at registration time may not reflect values written by `mutateConfigFile` in the same session — hence the closure cache
-- `draft.plugins.entries["openclaw-ynabro"].config` is the correct mutation path in `OpenClawConfig` — implementor must inspect the type to confirm exact mutation syntax (TypeScript will catch any mismatch)
+- `packages/ynabro/dist/` must be rebuilt after Task 1 before Tasks 2–4 can typecheck
+- `vitest.config.ts` in `packages/ynabro` already picks up `tests/*.test.ts` — `onboardingStatus.test.ts` requires no config change
+- `src/index.ts` in `packages/ynabro` uses explicit named exports (not `export *`); new symbols added to `tools/index.ts` must also be explicitly added to `src/index.ts`
+- Implementors may choose any internal pattern (union return type, custom error class + catch, or equivalent) for the structured-error refactor as long as the external tool contract returns JSON
 
 ## Verification Plan
 
-- `npm run check` — Biome lint, all workspace typechecks, all Vitest tests (all three suites: smoke, setupYnab, conformance)
-- `npm run typecheck -w packages/ynabro` — isolated core check
-- `npm run typecheck -w packages/openclaw-ynabro` — isolated openclaw check
-- `npm run typecheck -w packages/pi-ynabro` — isolated pi check
-- `npm run test -w packages/ynabro` — all three test files pass
+- `npm run typecheck -w packages/ynabro` — core typecheck
+- `npm run typecheck -w packages/openclaw-ynabro` — openclaw typecheck
+- `npm run typecheck -w packages/pi-ynabro` — pi typecheck
+- `npm run build -w packages/ynabro` — core build; confirms exports appear in dist
+- `npm run test -w packages/ynabro` — all test files (smoke, setupYnab, onboardingStatus, conformance)
+- `npm run check` — full suite: Biome lint, all typechecks, all tests
 
 ## Wave Plan
 
 | Wave | Tasks | Parallelism |
 |---|---|---|
-| 1 | Task 1 (core refactor + build) | Sequential — must come first |
-| 2 | Tasks 2, 3, 4 (adapters + unit tests) | Parallel — all depend only on Task 1 output |
+| 1 | Task 1 (core + build) | Sequential — must come first |
+| 2 | Tasks 2, 3, 4 | Parallel — all depend only on Task 1 output |
 | Verify 2 | Verifier | — |
-| 3 | Tasks 5, 6 (conformance + docs) | Parallel — depend on Tasks 2–3 being done |
+| 3 | Tasks 5, 6 | Parallel — Task 5 needs Wave 2 adapters; Task 6 is independent |
 | Final verify | Verifier | — |
+
+## Verification Report
+
+**Date:** 2026-05-17  
+**Branch:** `feat/unified-onboarding`  
+**Verdict:** ✅ APPROVED (High confidence)
+
+### Final gate
+- `npm run check` → Exit 0: Biome clean (33 files), all workspaces typecheck, 4 test files, **39/39 tests passing**
+
+### Commits on branch
+| Commit | Description |
+|---|---|
+| `b484624` | feat: add onboarding status check and hasToken to config adapter (Task 1) |
+| `6c2c7cb` | chore: fix export sort order in ynabro core (biome) |
+| `aaf20ea` | feat(openclaw-ynabro): add onboarding status tool and structured error handling (Task 2) |
+| `3b34f43` | feat(pi-ynabro): add onboarding status tool and structured error handling (Task 3) |
+| `a0cf003` | test: add onboardingStatus tests and update setupYnab mocks (Task 4) |
+| `d331fc3` | chore: fix biome lint warnings from Wave 2 |
+| `92350dc` | fix(pi-ynabro): remove non-null assertions by refactoring helper functions |
+| `1e189eb` | test: add conformance tests for hasToken and onboarding_status (Task 5) |
+| `53b1f86` | docs: update skill prompt and architecture for unified onboarding (Task 6) |
+
+### All acceptance criteria verified ✅
+- `YnabroConfigAdapter.hasToken()` present in `setupYnab.ts` and implemented on both adapters
+- `onboardingStatus.ts` exports `OnboardingStatus`, `TOKEN_INSTRUCTIONS`, `checkOnboardingStatus`; re-exported from public API and present in `dist/index.d.ts`
+- Both adapters register `ynabro_onboarding_status` tool; `openclaw.plugin.json` updated
+- All 5 openclaw + 4 pi plan-dependent tools return `{ error: "onboarding_required" }` JSON (no raw throws)
+- `onboardingStatus.test.ts` — 8 tests; `setupYnab.test.ts` mocks updated; `conformance.test.ts` — 4 new assertions
+- `skills/ynabro/prompts/ynabro.md` — `YNAB_TOKEN` removed; proactive `ynabro_onboarding_status` instruction present
+- `docs/TOOLS.md` — `ynabro_onboarding_status` documented; structured error noted
+- `docs/ARCHITECTURE.md` — `hasToken()` in interface block; Onboarding Detection section added
+
+### Deferred (Phase 2)
+- Token validation via API call (currently presence-check only)
+- `validateToken()` method on `YnabroConfigAdapter`
 
 ## Rollback Plan
 
-`git checkout packages/ynabro/src packages/openclaw-ynabro/src packages/pi-ynabro/src packages/ynabro/tests docs` plus `npm run build -w packages/ynabro` to restore dist. No external state is touched by source changes.
+`git checkout packages/ynabro/src packages/ynabro/tests packages/openclaw-ynabro/src packages/openclaw-ynabro/openclaw.plugin.json packages/pi-ynabro/src skills/ynabro/prompts docs` plus `npm run build -w packages/ynabro` to restore dist.

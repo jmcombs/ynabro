@@ -1,0 +1,43 @@
+# Task 01 Result
+
+## What was done
+
+Successfully implemented onboarding status checking functionality for the ynabro core library:
+
+1. **Extended YnabroConfigAdapter interface** — Added `hasToken(): Promise<boolean>` method to enable token presence checking
+2. **Created onboardingStatus.ts** — New core helper with:
+   - `OnboardingStatus` interface (ready, missing, tokenInstructions, nextStep)
+   - `TOKEN_INSTRUCTIONS` constant with YNAB developer portal steps
+   - `checkOnboardingStatus()` function that checks both token and plan configuration in parallel
+3. **Updated exports** — Added new symbols to both `tools/index.ts` and `src/index.ts` to expose them in the public API
+
+## Files changed
+
+- `packages/ynabro/src/tools/setupYnab.ts` — Added `hasToken()` to interface
+- `packages/ynabro/src/tools/onboardingStatus.ts` — New file (1088 bytes)
+- `packages/ynabro/src/tools/index.ts` — Added exports for new module
+- `packages/ynabro/src/index.ts` — Updated public API exports (required despite task spec)
+
+## Verification results
+
+All verification commands passed:
+
+```bash
+✓ npm run typecheck -w packages/ynabro — No errors
+✓ npm run build -w packages/ynabro — Successful build
+✓ grep "checkOnboardingStatus" packages/ynabro/dist/index.d.ts — Found in exports
+✓ grep "OnboardingStatus" packages/ynabro/dist/index.d.ts — Found in exports
+```
+
+## Commit
+
+```
+b484624 feat: add onboarding status check and hasToken to config adapter
+```
+
+## Notes
+
+- Task spec initially stated "do not touch src/index.ts" but this file uses explicit named exports, not `export *`, so it required updating to expose the new API
+- Supervisor clarified to proceed with updating src/index.ts
+- The `checkOnboardingStatus` function uses Promise.all for parallel token/plan checks as specified
+- `nextStep` provides contextual guidance based on what's missing

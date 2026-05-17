@@ -1,9 +1,10 @@
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import { AuthStorage } from "@earendil-works/pi-coding-agent";
 import { Type } from "typebox";
-import type { YnabroConfigAdapter } from "ynabro";
+import type { OnboardingStatus, YnabroConfigAdapter } from "ynabro";
 import {
   approveTransaction,
+  checkOnboardingStatus,
   getPendingTransactions,
   getPlanInfo,
   getRecentTransactions,
@@ -26,26 +27,29 @@ const piConfigAdapter: YnabroConfigAdapter = {
   async setDefaultPlanId(planId: string): Promise<void> {
     authStorage.set("ynab-plan", { type: "api_key", key: planId });
   },
+  async hasToken(): Promise<boolean> {
+    return !!(await authStorage.getApiKey("ynab"));
+  },
 };
 
 async function getClient(): Promise<YnabroClient> {
   const token = await authStorage.getApiKey("ynab");
-  if (!token) {
-    throw new Error(
-      "YNAB token not configured. Run ynabro_setup to complete onboarding.",
-    );
-  }
+  if (!token) throw new Error("YNAB token not configured");
   return new YnabroClient(token);
 }
 
 async function getDefaultPlanId(): Promise<string> {
   const planId = await piConfigAdapter.getDefaultPlanId();
-  if (!planId) {
-    throw new Error(
-      "No default plan configured. Run ynabro_setup to complete onboarding.",
-    );
-  }
+  if (!planId) throw new Error("No default plan configured");
   return planId;
+}
+
+async function checkConfigured(): Promise<OnboardingStatus | null> {
+  const status = await checkOnboardingStatus(piConfigAdapter);
+  if (!status.ready) {
+    return status;
+  }
+  return null;
 }
 
 const approveSchema = Type.Object({
@@ -76,12 +80,43 @@ const updateSkillStateSchema = Type.Object({
 
 export default function ynabroExtension(api: ExtensionAPI): void {
   api.registerTool({
+    name: "ynabro_onboarding_status",
+    label: "Onboarding Status",
+    description:
+      "Check whether YNABro is fully configured. Returns ready status, any missing configuration, and token generation instructions.",
+    parameters: Type.Object({}),
+    async execute(_toolCallId, _params) {
+      const status = await checkOnboardingStatus(piConfigAdapter);
+      return {
+        content: [{ type: "text", text: JSON.stringify(status) }],
+        details: undefined,
+      };
+    },
+  });
+
+  api.registerTool({
     name: "ynabro_get_pending_transactions",
     label: "Get Pending Transactions",
     description:
       "Get all pending (uncategorized) transactions for the default plan",
     parameters: Type.Object({}),
     async execute(_toolCallId, _params) {
+      const onboardingError = await checkConfigured();
+      if (onboardingError) {
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify({
+                error: "onboarding_required",
+                ...onboardingError,
+              }),
+            },
+          ],
+          details: undefined,
+        };
+      }
+
       const [client, planId] = await Promise.all([
         getClient(),
         getDefaultPlanId(),
@@ -100,6 +135,22 @@ export default function ynabroExtension(api: ExtensionAPI): void {
     description: "Get recent transactions for the default plan",
     parameters: Type.Object({}),
     async execute(_toolCallId, _params) {
+      const onboardingError = await checkConfigured();
+      if (onboardingError) {
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify({
+                error: "onboarding_required",
+                ...onboardingError,
+              }),
+            },
+          ],
+          details: undefined,
+        };
+      }
+
       const [client, planId] = await Promise.all([
         getClient(),
         getDefaultPlanId(),
@@ -118,6 +169,22 @@ export default function ynabroExtension(api: ExtensionAPI): void {
     description: "Approve a specific transaction in the default plan",
     parameters: approveSchema,
     async execute(_toolCallId, params) {
+      const onboardingError = await checkConfigured();
+      if (onboardingError) {
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify({
+                error: "onboarding_required",
+                ...onboardingError,
+              }),
+            },
+          ],
+          details: undefined,
+        };
+      }
+
       const [client, planId] = await Promise.all([
         getClient(),
         getDefaultPlanId(),
@@ -136,6 +203,22 @@ export default function ynabroExtension(api: ExtensionAPI): void {
     description: "Get basic information about the default plan",
     parameters: Type.Object({}),
     async execute(_toolCallId, _params) {
+      const onboardingError = await checkConfigured();
+      if (onboardingError) {
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify({
+                error: "onboarding_required",
+                ...onboardingError,
+              }),
+            },
+          ],
+          details: undefined,
+        };
+      }
+
       const [client, planId] = await Promise.all([
         getClient(),
         getDefaultPlanId(),

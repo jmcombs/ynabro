@@ -3,6 +3,7 @@ import { definePluginEntry } from "openclaw/plugin-sdk/plugin-entry";
 import type { YnabroConfigAdapter } from "ynabro";
 import {
   approveTransaction,
+  checkOnboardingStatus,
   getPendingTransactions,
   getPlanInfo,
   getRecentTransactions,
@@ -96,6 +97,9 @@ export default definePluginEntry({
           },
         });
       },
+      async hasToken(): Promise<boolean> {
+        return !!(api.pluginConfig as { token?: string } | undefined)?.token;
+      },
     };
 
     function getClient(): YnabroClient {
@@ -118,6 +122,18 @@ export default definePluginEntry({
       }
       return planId;
     }
+
+    api.registerTool({
+      name: "ynabro_onboarding_status",
+      label: "Onboarding Status",
+      description:
+        "Check whether YNABro is fully configured. Returns ready status, any missing configuration, and token generation instructions.",
+      parameters: Type.Object({}),
+      async execute() {
+        const status = await checkOnboardingStatus(openClawAdapter);
+        return ok(JSON.stringify(status));
+      },
+    });
 
     api.registerTool({
       name: "ynabro_setup",
@@ -150,17 +166,27 @@ export default definePluginEntry({
         "Call ynabro_setup first to get the list of available plan IDs.",
       parameters: saveDefaultPlanSchema,
       async execute(_id, raw) {
-        const p = params(raw);
-        const client = getClient();
-        const plans = await client.getPlans();
-        await setupYnab(client, plans, p.planId as string, openClawAdapter);
-        const saved = plans.find((plan) => plan.id === p.planId);
-        return ok(
-          JSON.stringify({
-            message: `Default plan set to: ${saved?.name ?? p.planId}`,
-            defaultPlanId: p.planId,
-          }),
-        );
+        try {
+          const p = params(raw);
+          const client = getClient();
+          const plans = await client.getPlans();
+          await setupYnab(client, plans, p.planId as string, openClawAdapter);
+          const saved = plans.find((plan) => plan.id === p.planId);
+          return ok(
+            JSON.stringify({
+              message: `Default plan set to: ${saved?.name ?? p.planId}`,
+              defaultPlanId: p.planId,
+            }),
+          );
+        } catch (_error) {
+          const status = await checkOnboardingStatus(openClawAdapter);
+          return ok(
+            JSON.stringify({
+              error: "onboarding_required",
+              ...status,
+            }),
+          );
+        }
       },
     });
 
@@ -170,12 +196,22 @@ export default definePluginEntry({
       description: "Get all pending (uncategorized) transactions for a plan",
       parameters: Type.Object({}),
       async execute() {
-        const [client, planId] = await Promise.all([
-          Promise.resolve(getClient()),
-          getDefaultPlanId(),
-        ]);
-        const result = await getPendingTransactions(client, planId);
-        return ok(JSON.stringify(result, null, 2));
+        try {
+          const [client, planId] = await Promise.all([
+            Promise.resolve(getClient()),
+            getDefaultPlanId(),
+          ]);
+          const result = await getPendingTransactions(client, planId);
+          return ok(JSON.stringify(result, null, 2));
+        } catch (_error) {
+          const status = await checkOnboardingStatus(openClawAdapter);
+          return ok(
+            JSON.stringify({
+              error: "onboarding_required",
+              ...status,
+            }),
+          );
+        }
       },
     });
 
@@ -185,12 +221,22 @@ export default definePluginEntry({
       description: "Get recent transactions for a plan",
       parameters: Type.Object({}),
       async execute() {
-        const [client, planId] = await Promise.all([
-          Promise.resolve(getClient()),
-          getDefaultPlanId(),
-        ]);
-        const result = await getRecentTransactions(client, planId);
-        return ok(JSON.stringify(result, null, 2));
+        try {
+          const [client, planId] = await Promise.all([
+            Promise.resolve(getClient()),
+            getDefaultPlanId(),
+          ]);
+          const result = await getRecentTransactions(client, planId);
+          return ok(JSON.stringify(result, null, 2));
+        } catch (_error) {
+          const status = await checkOnboardingStatus(openClawAdapter);
+          return ok(
+            JSON.stringify({
+              error: "onboarding_required",
+              ...status,
+            }),
+          );
+        }
       },
     });
 
@@ -200,13 +246,23 @@ export default definePluginEntry({
       description: "Approve a specific transaction",
       parameters: approveSchema,
       async execute(_id, raw) {
-        const p = params(raw);
-        const [client, planId] = await Promise.all([
-          Promise.resolve(getClient()),
-          getDefaultPlanId(),
-        ]);
-        await approveTransaction(client, planId, p.transactionId as string);
-        return ok(JSON.stringify({ success: true }));
+        try {
+          const p = params(raw);
+          const [client, planId] = await Promise.all([
+            Promise.resolve(getClient()),
+            getDefaultPlanId(),
+          ]);
+          await approveTransaction(client, planId, p.transactionId as string);
+          return ok(JSON.stringify({ success: true }));
+        } catch (_error) {
+          const status = await checkOnboardingStatus(openClawAdapter);
+          return ok(
+            JSON.stringify({
+              error: "onboarding_required",
+              ...status,
+            }),
+          );
+        }
       },
     });
 
@@ -216,12 +272,22 @@ export default definePluginEntry({
       description: "Get basic information about a plan",
       parameters: Type.Object({}),
       async execute() {
-        const [client, planId] = await Promise.all([
-          Promise.resolve(getClient()),
-          getDefaultPlanId(),
-        ]);
-        const result = await getPlanInfo(client, planId);
-        return ok(JSON.stringify(result, null, 2));
+        try {
+          const [client, planId] = await Promise.all([
+            Promise.resolve(getClient()),
+            getDefaultPlanId(),
+          ]);
+          const result = await getPlanInfo(client, planId);
+          return ok(JSON.stringify(result, null, 2));
+        } catch (_error) {
+          const status = await checkOnboardingStatus(openClawAdapter);
+          return ok(
+            JSON.stringify({
+              error: "onboarding_required",
+              ...status,
+            }),
+          );
+        }
       },
     });
 

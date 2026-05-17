@@ -1,209 +1,106 @@
-## Task 6: Documentation — all READMEs, `docs/TOOLS.md`, `docs/ARCHITECTURE.md`
+## Task 6: Skill prompt + documentation
 
-**Prerequisite:** All code tasks (1–3) complete. Review the final state of the source files before writing documentation — especially `packages/openclaw-ynabro/src/index.ts` and `packages/pi-ynabro/src/index.ts`.
+Rewrite the onboarding section of the YNABro skill prompt and update the two architecture/tools docs.
 
 ## Scope
 
-**In scope:**
-- `README.md` (repo root)
-- `packages/openclaw-ynabro/README.md`
-- `packages/pi-ynabro/README.md`
+- `skills/ynabro/prompts/ynabro.md`
 - `docs/TOOLS.md`
 - `docs/ARCHITECTURE.md`
 
-**Not in scope:** Source code, tests, CI
-
-## What to implement
-
-### `README.md` (repo root)
-
-The Quick Start example currently shows:
-```ts
-const client = new YnabroClient(process.env.YNAB_TOKEN!);
-const pending = await getPendingTransactions(client, planId);
-await approveTransaction(client, planId, transactionId);
-```
-
-Update to reflect that `planId` is now stored — callers don't pass it per-call. Add a brief note explaining `YnabroConfigAdapter` and `setupYnab` for library consumers:
-
-```ts
-import { YnabroClient, setupYnab, getPendingTransactions, approveTransaction } from 'ynabro';
-import type { YnabroConfigAdapter } from 'ynabro';
-
-// 1. Implement the adapter for your platform's config system
-const adapter: YnabroConfigAdapter = {
-  getDefaultPlanId: async () => /* read from your config */ undefined,
-  setDefaultPlanId: async (id) => { /* write to your config */ },
-};
-
-// 2. One-time setup: fetch plans, let the user select, then store
-const client = new YnabroClient(token);
-const plans = await client.getPlans();
-await setupYnab(client, plans, selectedPlanId, adapter);
-
-// 3. Subsequent calls — no planId needed in the adapter layer
-const pending = await getPendingTransactions(client, await adapter.getDefaultPlanId()!);
-```
-
-Keep the badges, philosophy section, and links to docs unchanged.
-
----
-
-### `packages/openclaw-ynabro/README.md`
-
-**Available Tools** — add `ynabro_save_default_plan` after `ynabro_setup`:
-```
-- `ynabro_setup`
-- `ynabro_save_default_plan`
-- `ynabro_get_pending_transactions`
-...
-```
-
-**Configuration section** — currently describes two resolution methods (plugin config + env var fallback). Replace entirely with:
-
-> Set your YNAB Personal Access Token in `openclaw.json`:
->
-> ```json
-> {
->   "plugins": {
->     "entries": {
->       "openclaw-ynabro": {
->         "config": {
->           "token": "your-ynab-personal-access-token"
->         }
->       }
->     }
->   }
-> }
-> ```
->
-> OpenClaw also surfaces this as a sensitive field in its settings UI (labeled "YNAB Personal Access Token"). Generate a token at https://app.ynab.com/settings/developer.
->
-> No environment variable fallback is supported.
-
-**Add Onboarding section** (after Configuration):
-
-> ## Onboarding
->
-> Run `ynabro_setup` to fetch your available YNAB plans, then `ynabro_save_default_plan` with the plan ID you want to use as the default:
->
-> 1. `ynabro_setup` — returns `{ plans: [{ id, name }] }`
-> 2. User (or agent) selects a plan from the list
-> 3. `ynabro_save_default_plan` with `{ planId: "<selected-id>" }` — persists the default
->
-> After onboarding, all plan-dependent tools (`ynabro_get_pending_transactions`, `ynabro_get_recent_transactions`, `ynabro_approve_transaction`, `ynabro_get_plan_info`) resolve the plan automatically — no `planId` parameter required.
-
----
-
-### `packages/pi-ynabro/README.md`
-
-**Requirements section** — replace:
-> `YNAB_TOKEN` environment variable must be set
-
-With:
-> Run `ynabro_setup` once to complete onboarding. The tool will prompt you for your YNAB Personal Access Token (generate one at https://app.ynab.com/settings/developer) and let you select your default plan. Both are stored securely in pi's `AuthStorage` (`~/.pi/agent/auth.json`).
-
-**Available Tools** — this package uses a single-step setup; no `ynabro_save_default_plan`. Tools list stays the same.
-
----
-
-### `docs/TOOLS.md`
-
-**Authentication section** — replace current text with:
-
-> All tools that call the YNAB API require a valid Personal Access Token.
->
-> - **`openclaw-ynabro`**: Token is resolved exclusively from `plugins.entries.openclaw-ynabro.config.token` in `openclaw.json`. No environment variable fallback.
-> - **`pi-ynabro`**: Token is stored in pi's `AuthStorage` (`~/.pi/agent/auth.json`) after running `ynabro_setup`.
->
-> Tools that do not require a token: `ynabro_get_skill_state`, `ynabro_update_skill_state` (local state only).
-
-**Add `ynabro_setup` entry** that distinguishes platform behavior:
-
-> ## ynabro_setup
->
-> **OpenClaw:** Fetches available YNAB plans and returns them for selection. Requires token configured in `openclaw.json`. Returns `{ plans: [{ id: string, name: string }] }`. Call `ynabro_save_default_plan` next to complete onboarding.
->
-> **pi:** Interactive one-step onboarding. Prompts for a YNAB Personal Access Token (if not already stored) and presents a plan selector. Stores both in pi's AuthStorage. No follow-up call required.
-
-**Add `ynabro_save_default_plan` entry** (OpenClaw only):
-
-> ## ynabro_save_default_plan *(OpenClaw only)*
->
-> Saves a plan as the default for all subsequent tool calls. Call `ynabro_setup` first to get the list of valid plan IDs.
->
-> **Parameters:**
-> - `planId` (string) — The plan ID to set as default (from `ynabro_setup` results)
->
-> **Returns:** `{ message: string, defaultPlanId: string }`
->
-> Persists `defaultPlanId` to `plugins.entries.openclaw-ynabro.config.defaultPlanId` in `openclaw.json`.
-
-**Plan-dependent tools** (`getPendingTransactions`, `getRecentTransactions`, `approveTransaction`, `getPlanInfo`) — add to each description:
-
-> The plan ID is resolved automatically from the stored default. No `planId` parameter is required or accepted.
-
----
-
-### `docs/ARCHITECTURE.md`
-
-**Token resolution section** — replace the two-path flowchart with separate diagrams for each adapter:
-
-**OpenClaw:**
-```mermaid
-flowchart TD
-    A[Tool execute called] --> B{api.pluginConfig.token set?}
-    B -- Yes --> C[Use plugin config token]
-    B -- No --> D[Throw: configure token in openclaw.json]
-    C --> E[Return YnabroClient]
-```
-
-**pi:**
-```mermaid
-flowchart TD
-    A[Tool execute called] --> B{authStorage.getApiKey 'ynab' returns value?}
-    B -- Yes --> C[Use stored token]
-    B -- No --> D[Throw: run ynabro_setup to store token]
-    C --> E[Return YnabroClient]
-```
-
-Remove the "corrected in issue #32" paragraph at the end of the architecture doc.
-
-**Add `YnabroConfigAdapter` section** after the token resolution section:
-
-> ## YnabroConfigAdapter
->
-> The core `ynabro` library exports a platform-agnostic config adapter interface:
->
-> ```ts
-> interface YnabroConfigAdapter {
->   getDefaultPlanId(): Promise<string | undefined>;
->   setDefaultPlanId(planId: string): Promise<void>;
-> }
-> ```
->
-> Each platform adapter implements this interface to store and retrieve the default plan ID in the platform's native config system:
->
-> | Adapter | Storage mechanism |
-> |---|---|
-> | `pi-ynabro` | pi `AuthStorage` (`~/.pi/agent/auth.json`), key `"ynab-plan"` |
-> | `openclaw-ynabro` | `api.runtime.config.mutateConfigFile` → `plugins.entries.openclaw-ynabro.config.defaultPlanId` |
->
-> `setupYnab(client, plans, selectedPlanId, adapter)` in core validates that `selectedPlanId` is present in the provided `plans` list and delegates storage to the adapter. Each adapter's `ynabro_setup` tool is responsible for fetching plans, handling user selection, and invoking `setupYnab` — only the storage step is shared.
->
-> This design prevents platform-specific config logic from leaking into the core library and ensures both adapters behave consistently while storing config in the right place for each runtime.
-
-**Update System Overview diagram** if it references `setupYnab` or onboarding flow — update to reflect that setup now flows through the adapter layer.
+Not in scope: package READMEs, source code, tests, CI.
 
 ## Definition of Done
 
-- All five files updated as described
-- `openclaw-ynabro/README.md` mentions `ynabro_save_default_plan` and two-step onboarding
-- `pi-ynabro/README.md` no longer mentions `YNAB_TOKEN` env var requirement
-- `docs/TOOLS.md` has separate auth descriptions for each adapter; includes `ynabro_save_default_plan`
-- `docs/ARCHITECTURE.md` has separate token flowcharts per adapter; has `YnabroConfigAdapter` section; "corrected in issue #32" note is gone
-- No source code or test files modified
+**`skills/ynabro/prompts/ynabro.md`:**
+
+Replace the existing `## Onboarding & Access` section entirely with the following content (exact prose may vary slightly, but all bullet points must be present):
+
+```markdown
+## Onboarding & Access
+
+Before performing any YNAB operations, call `ynabro_onboarding_status` to check
+whether YNAB access is configured.
+
+If `ready` is `false`, walk the user through setup:
+
+1. **Missing token:** Share the `tokenInstructions` field from the status response.
+   The token must never be entered into the chat.
+   - **pi:** Call `ynabro_setup` — it presents a native TUI input popup where the
+     user enters the token directly. It goes straight to pi's AuthStorage and
+     never appears in the conversation.
+   - **OpenClaw:** Instruct the user to add the token to `openclaw.json` or via
+     the OpenClaw settings UI, then ask them to confirm when done.
+
+2. **Missing plan:** Call `ynabro_setup` to list available plans. Help the user
+   pick one. On OpenClaw, follow up with `ynabro_save_default_plan`.
+
+3. **After onboarding completes:** If the user's original message was a functional
+   request (e.g., "show my pending transactions"), fulfill it immediately.
+   Do not make them repeat themselves.
+
+If a tool returns `{ "error": "onboarding_required" }` during a conversation,
+treat it the same as a failed status check — initiate onboarding, then retry
+the original operation.
+```
+
+- Remove all references to `YNAB_TOKEN` environment variable from the file
+- Remove all references to `setupYnab()` as a one-call setup (the tool is `ynabro_setup`)
+
+**`docs/TOOLS.md`:**
+
+1. Add a new `## ynabro_onboarding_status` section (place it before `## ynabro_setup`):
+   - Describe: available on both platforms; no parameters; returns `OnboardingStatus` JSON
+   - Document the response fields: `ready` (boolean), `missing` (array of `"token"` / `"plan"`), `tokenInstructions` (string), `nextStep` (string, present only when `ready: false`)
+   - Note: the agent should call this proactively before any YNAB operation
+
+2. In the Authentication section, update the description of what happens when config is missing — note that tools return `{ error: "onboarding_required", ... }` rather than throwing
+
+**`docs/ARCHITECTURE.md`:**
+
+1. In the `## YnabroConfigAdapter` section:
+   - Add `hasToken(): Promise<boolean>` to the interface code block
+   - Add a row to the adapter table: `hasToken()` implementation for each platform
+   - Add `checkOnboardingStatus(adapter)` with a brief description of what it returns
+
+2. Add a new `## Onboarding Detection` section (after `## YnabroConfigAdapter`) describing the two-layer strategy:
+   - Layer 1 (prompt-driven): agent calls `ynabro_onboarding_status` proactively
+   - Layer 2 (structured error): plan-dependent tools return `{ error: "onboarding_required" }` JSON as a safety net
 
 ## Verification
 
-Manual review — confirm no stale references to `YNAB_TOKEN`, `planIdSchema`, `.ynabro/config.json`, or "corrected in issue #32" remain in any of the five files.
+Manual review. Then confirm the overall suite still passes:
+
+```bash
+npm run check
+```
+
+---
+
+## Task 6 Complete ✅
+
+**What I did:**
+Updated three documentation files with the unified onboarding flow:
+1. Rewrote `skills/ynabro/prompts/ynabro.md` Onboarding & Access section to instruct the agent to call `ynabro_onboarding_status` proactively
+2. Added `ynabro_onboarding_status` tool reference to `docs/TOOLS.md` with full field documentation
+3. Extended `docs/ARCHITECTURE.md` with `hasToken()` in the YnabroConfigAdapter interface and added new "Onboarding Detection" section explaining the two-layer strategy
+
+**Files changed:**
+- `skills/ynabro/prompts/ynabro.md` — Replaced Onboarding & Access section, removed YNAB_TOKEN env var references
+- `docs/TOOLS.md` — Added ynabro_onboarding_status section, updated Authentication section with structured error info
+- `docs/ARCHITECTURE.md` — Added hasToken() to interface, updated adapter table, added checkOnboardingStatus() description, added Onboarding Detection section
+
+**Verification result:**
+```
+✅ npm run check: All linting, type-checking, and tests pass (39/39 tests green)
+✅ No source code modified (documentation-only as specified)
+```
+
+**Commit:**
+```
+53b1f86 docs: update skill prompt and architecture for unified onboarding
+```
+Committed on branch `feat/unified-onboarding`
+
+**Risks/Follow-ups:**
+None. Task 6 is complete. All unified onboarding implementation and documentation is now in place.

@@ -1,72 +1,42 @@
-# Task 4: Unit tests for setupYnab and YnabroConfigAdapter
+## Task 4: Unit tests — `onboardingStatus.test.ts` + update `setupYnab.test.ts`
 
-**Status:** ✅ Complete  
-**Assignee:** implementor-typescript  
-**Commit:** e561186
+Add a new test file for `checkOnboardingStatus()` and update all mock adapters in `setupYnab.test.ts` to satisfy the extended `YnabroConfigAdapter` interface.
 
-## What Changed
+## Scope
 
-Added comprehensive test coverage for the new `setupYnab` API and `YnabroConfigAdapter` interface in the core `ynabro` package.
+- `packages/ynabro/tests/onboardingStatus.test.ts` — new file
+- `packages/ynabro/tests/setupYnab.test.ts` — update existing mocks only
 
-### Files Changed
+Not in scope: `conformance.test.ts` (Task 5), adapter source files.
 
-- **packages/ynabro/tests/setupYnab.test.ts** (new)
-  - 10 test cases covering the four-parameter `setupYnab` API
-  - `describe("setupYnab")` with 8 tests:
-    - Stores the correct plan ID via adapter
-    - Calls `setDefaultPlanId` exactly once
-    - Throws when `selectedPlanId` not in plans
-    - Error message includes the invalid plan ID
-    - Error message lists all valid plan IDs
-    - Does not call `setDefaultPlanId` if validation fails
-    - Succeeds with single-plan list
-    - Succeeds selecting the last plan in a multi-plan list
-  - `describe("YnabroConfigAdapter")` with 2 tests:
-    - Validates `setupYnab` is a function
-    - Validates the adapter interface can be implemented
+Prerequisite: Task 1 complete and built.
 
-- **packages/ynabro/tests/smoke.test.ts** (updated)
-  - Added `setupYnab` to imports from `../src/index.js`
-  - Added one new test case: "should export setupYnab"
-  - All existing tests continue to pass
+## Definition of Done
 
-## Verification Results
+**`setupYnab.test.ts` — mock updates:**
+- Every inline `YnabroConfigAdapter` object literal in the file gains `hasToken: async () => false` (or `async () => true` where semantically appropriate)
+- No test logic changes — only the mock objects are extended
+- `npm run typecheck -w packages/ynabro` must not complain about missing `hasToken` on any mock
 
-✅ **`npm run test -w packages/ynabro`** — All 14 tests pass
-- 4 smoke tests (including new setupYnab export test)
-- 10 setupYnab/adapter tests
+**`onboardingStatus.test.ts` — new test file:**
 
-✅ **`npm run typecheck -w packages/ynabro`** — Passes
+Must cover all of the following cases (use `vi.fn()` / inline objects for mock adapters; import `checkOnboardingStatus` from `"../src/index.js"`):
 
-⚠️ **`npm run check`** (root) — Fails on openclaw-ynabro typecheck
-- **Expected:** Tasks 2 and 3 (adapter updates) must complete before root check passes
-- **Reason:** openclaw-ynabro still uses old setupYnab signature (no args)
-- **Resolution:** Will be fixed by Task 2
+1. Returns `ready: true` and `missing: []` when `hasToken()` returns `true` and `getDefaultPlanId()` returns a string
+2. Returns `ready: false` and `missing: ["token", "plan"]` when `hasToken()` returns `false` and `getDefaultPlanId()` returns `undefined`
+3. Returns `ready: false` and `missing: ["token"]` (not `"plan"`) when `hasToken()` returns `false` and `getDefaultPlanId()` returns a string
+4. Returns `ready: false` and `missing: ["plan"]` (not `"token"`) when `hasToken()` returns `true` and `getDefaultPlanId()` returns `undefined`
+5. `tokenInstructions` is a non-empty string in every case
+6. `tokenInstructions` contains the string `https://app.ynab.com/settings/developer`
+7. `nextStep` is a non-empty string when `ready` is `false`
+8. `nextStep` is `undefined` when `ready` is `true`
 
-## Test Coverage
+Each test must also add `setDefaultPlanId: async () => {}` to the mock adapter so the object satisfies `YnabroConfigAdapter`.
 
-### Happy Paths
-- Valid plan selection from multi-plan list
-- Valid plan selection from single-plan list
-- Selecting the last plan in a list
-- Adapter receives correct plan ID
+## Verification
 
-### Error Paths
-- Invalid plan ID throws error
-- Error message includes invalid ID
-- Error message lists all valid IDs
-- Adapter not called on validation failure
+```bash
+npm run test -w packages/ynabro
+```
 
-### Contract Validation
-- setupYnab is exported as a function
-- YnabroConfigAdapter interface is implementable
-
-## Risks & Follow-ups
-
-None. Task complete and isolated to core `ynabro` package.
-
-## Dependencies
-
-- **Prerequisite:** Task 1 (complete - core refactor and build)
-- **Blocks:** None (Task 4 runs in parallel with Tasks 2 and 3)
-- **Next:** Task 5 (conformance tests) will verify that adapters import setupYnab correctly
+All test files must pass (smoke + setupYnab + onboardingStatus). The new file adds ≥ 8 tests to the total count.
