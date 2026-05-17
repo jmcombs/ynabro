@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.2.10](https://github.com/jmcombs/ynabro/compare/openclaw-ynabro/v2.2.9...openclaw-ynabro/v2.2.10) (2026-05-17)
+
+
+### Bug Fixes
+
+* **openclaw-ynabro:** tools not registering in OpenClaw ([#66](https://github.com/jmcombs/ynabro/issues/66)) ([fdc495e](https://github.com/jmcombs/ynabro/commit/fdc495e82ba8c6ef17a42137106b2ede5559dcb7))
+
 ## [2.2.9](https://github.com/jmcombs/ynabro/compare/openclaw-ynabro/v2.2.8...openclaw-ynabro/v2.2.9) (2026-05-17)
 
 
