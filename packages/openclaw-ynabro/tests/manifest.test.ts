@@ -98,6 +98,83 @@ describe("openclaw.plugin.json", () => {
     });
   });
 
+  describe("pluginConfigSchema (via default export)", () => {
+    it("accepts undefined", async () => {
+      const { default: plugin } = await import("../src/index.ts");
+      const result = (
+        plugin.configSchema as {
+          safeParse: (v: unknown) => { success: boolean };
+        }
+      ).safeParse(undefined);
+      expect(result.success).toBe(true);
+    });
+
+    it("accepts empty object", async () => {
+      const { default: plugin } = await import("../src/index.ts");
+      const result = (
+        plugin.configSchema as {
+          safeParse: (v: unknown) => { success: boolean };
+        }
+      ).safeParse({});
+      expect(result.success).toBe(true);
+    });
+
+    it("accepts { token: string }", async () => {
+      const { default: plugin } = await import("../src/index.ts");
+      const result = (
+        plugin.configSchema as {
+          safeParse: (v: unknown) => { success: boolean };
+        }
+      ).safeParse({ token: "tok" });
+      expect(result.success).toBe(true);
+    });
+
+    it("accepts { token: SecretRef object }", async () => {
+      const { default: plugin } = await import("../src/index.ts");
+      const result = (
+        plugin.configSchema as {
+          safeParse: (v: unknown) => { success: boolean };
+        }
+      ).safeParse({
+        token: { source: "env", provider: "default", id: "X" },
+      });
+      expect(result.success).toBe(true);
+    });
+
+    it("accepts { token: string, defaultPlanId: string }", async () => {
+      const { default: plugin } = await import("../src/index.ts");
+      const result = (
+        plugin.configSchema as {
+          safeParse: (v: unknown) => { success: boolean };
+        }
+      ).safeParse({
+        token: "tok",
+        defaultPlanId: "pid",
+      });
+      expect(result.success).toBe(true);
+    });
+
+    it("rejects unknown keys", async () => {
+      const { default: plugin } = await import("../src/index.ts");
+      const result = (
+        plugin.configSchema as {
+          safeParse: (v: unknown) => { success: boolean };
+        }
+      ).safeParse({ unknownKey: 1 });
+      expect(result.success).toBe(false);
+    });
+
+    it("rejects non-object values", async () => {
+      const { default: plugin } = await import("../src/index.ts");
+      const result = (
+        plugin.configSchema as {
+          safeParse: (v: unknown) => { success: boolean };
+        }
+      ).safeParse(42);
+      expect(result.success).toBe(false);
+    });
+  });
+
   describe("contracts.tools", () => {
     const expectedTools = [
       "ynabro_onboarding_status",

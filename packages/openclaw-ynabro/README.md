@@ -16,8 +16,15 @@ OpenClaw plugin that registers [ynabro](https://www.npmjs.com/package/ynabro) to
 openclaw plugins install openclaw-ynabro
 ```
 
+After installation, restart the OpenClaw gateway to load the plugin:
+
+```bash
+openclaw gateway restart
+```
+
 ## Available Tools
 
+- `ynabro_onboarding_status`
 - `ynabro_setup`
 - `ynabro_save_default_plan`
 - `ynabro_get_pending_transactions`

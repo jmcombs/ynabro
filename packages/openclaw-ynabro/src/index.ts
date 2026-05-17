@@ -35,6 +35,61 @@ function emptyPluginConfigSchema() {
   };
 }
 
+function pluginConfigSchema() {
+  const ALLOWED_KEYS = new Set(["token", "defaultPlanId"]);
+  return {
+    safeParse(value: unknown) {
+      if (value === undefined)
+        return { success: true as const, data: undefined };
+      if (!value || typeof value !== "object" || Array.isArray(value)) {
+        return { success: false as const, error: "expected config object" };
+      }
+      const obj = value as Record<string, unknown>;
+      for (const key of Object.keys(obj)) {
+        if (!ALLOWED_KEYS.has(key)) {
+          return {
+            success: false as const,
+            error: `unknown config key: ${key}`,
+          };
+        }
+      }
+      const { token, defaultPlanId } = obj;
+      if (
+        token !== undefined &&
+        typeof token !== "string" &&
+        (typeof token !== "object" || Array.isArray(token) || token === null)
+      ) {
+        return {
+          success: false as const,
+          error: "token must be a string or SecretRef object",
+        };
+      }
+      if (defaultPlanId !== undefined && typeof defaultPlanId !== "string") {
+        return {
+          success: false as const,
+          error: "defaultPlanId must be a string",
+        };
+      }
+      return { success: true as const, data: obj };
+    },
+    jsonSchema: {
+      type: "object" as const,
+      additionalProperties: false,
+      properties: {
+        token: {
+          type: ["string", "object"] as ["string", "object"],
+          description:
+            "YNAB Personal Access Token. May be a plaintext string or a SecretRef object { source, provider, id } configured via `openclaw secrets configure` or `openclaw config set ... --ref-source ...`.",
+        },
+        defaultPlanId: {
+          type: "string" as const,
+          description: "Default YNAB plan ID selected during onboarding",
+        },
+      },
+    },
+  };
+}
+
 type InlineDefinePluginEntryOptions = {
   id: string;
   name: string;
@@ -145,6 +200,7 @@ export default definePluginEntry({
   id: "openclaw-ynabro",
   name: "YNABro",
   description: "YNAB budget management tools for OpenClaw agents",
+  configSchema: pluginConfigSchema(),
   register(api) {
     let cachedPlanId: string | undefined;
 
