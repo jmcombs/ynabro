@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.2.6](https://github.com/jmcombs/ynabro/compare/openclaw-ynabro/v2.2.5...openclaw-ynabro/v2.2.6) (2026-05-17)
+
+
+### Bug Fixes
+
+* **openclaw-ynabro:** accept SecretRef objects in configSchema.token ([#56](https://github.com/jmcombs/ynabro/issues/56)) ([421c390](https://github.com/jmcombs/ynabro/commit/421c3902a99fd607d14b200b3a754ff843ef3acf)), closes [#52](https://github.com/jmcombs/ynabro/issues/52)
+
 ## [2.2.5](https://github.com/jmcombs/ynabro/compare/openclaw-ynabro/v2.2.4...openclaw-ynabro/v2.2.5) (2026-05-17)
 
 
