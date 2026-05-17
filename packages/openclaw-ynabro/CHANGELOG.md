@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.2.5](https://github.com/jmcombs/ynabro/compare/openclaw-ynabro/v2.2.4...openclaw-ynabro/v2.2.5) (2026-05-17)
+
+
+### Bug Fixes
+
+* **openclaw-ynabro:** integrate with OpenClaw secrets system for YNAB token ([#53](https://github.com/jmcombs/ynabro/issues/53)) ([abbb62c](https://github.com/jmcombs/ynabro/commit/abbb62cd2c80926ff29366f92fca9ae2a4192bae)), closes [#52](https://github.com/jmcombs/ynabro/issues/52)
+
 ## [2.2.4](https://github.com/jmcombs/ynabro/compare/openclaw-ynabro/v2.2.3...openclaw-ynabro/v2.2.4) (2026-05-17)
 
 
