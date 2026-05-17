@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.2.0](https://github.com/jmcombs/ynabro/compare/ynabro/v2.1.0...ynabro/v2.2.0) (2026-05-17)
+
+
+### Features
+
+* add onboarding status check and hasToken to config adapter ([b484624](https://github.com/jmcombs/ynabro/commit/b4846243cfa1ed136270c9cb4e3b33410ab83fff))
+* unified onboarding flow with ynabro_onboarding_status tool ([9946b3b](https://github.com/jmcombs/ynabro/commit/9946b3ba6761c42f25b60779f5fb87f9ffaa01fa))
+
 ## [2.1.0](https://github.com/jmcombs/ynabro/compare/ynabro/v2.0.0...ynabro/v2.1.0) (2026-05-16)
 
 
