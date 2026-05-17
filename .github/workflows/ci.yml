@@ -91,7 +91,7 @@ jobs:
       - run: npm run build
       - name: Pack tarball
         run: npm pack --workspace packages/openclaw-ynabro --pack-destination /tmp
-      - name: Assert no file: references survive into tarball
+      - name: Assert tarball manifest has no workspace-local path deps
         run: |
           TARBALL=$(ls /tmp/openclaw-ynabro-*.tgz)
           MANIFEST=$(tar -xOzf "$TARBALL" package/package.json)
