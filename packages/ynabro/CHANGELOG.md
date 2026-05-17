@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.2.2](https://github.com/jmcombs/ynabro/compare/ynabro/v2.2.1...ynabro/v2.2.2) (2026-05-17)
+
+
+### Performance Improvements
+
+* **openclaw-ynabro:** skip redundant getPlans() fetch in ynabro_save_default_plan ([cf83634](https://github.com/jmcombs/ynabro/commit/cf8363456a4f94402a06d696171f4c8cf764bd8b))
+* **ynabro:** make plans optional in setupYnab to avoid redundant getPlans fetch ([9a4f4bc](https://github.com/jmcombs/ynabro/commit/9a4f4bc7acd1f365e288d649a8a8d13848703420))
+
 ## [2.2.1](https://github.com/jmcombs/ynabro/compare/ynabro/v2.2.0...ynabro/v2.2.1) (2026-05-17)
 
 

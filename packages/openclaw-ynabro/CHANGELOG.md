@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.2.11](https://github.com/jmcombs/ynabro/compare/openclaw-ynabro/v2.2.10...openclaw-ynabro/v2.2.11) (2026-05-17)
+
+
+### Performance Improvements
+
+* **openclaw-ynabro:** skip redundant getPlans() fetch in ynabro_save_default_plan ([cf83634](https://github.com/jmcombs/ynabro/commit/cf8363456a4f94402a06d696171f4c8cf764bd8b))
+* **ynabro:** make plans optional in setupYnab to avoid redundant getPlans fetch ([9a4f4bc](https://github.com/jmcombs/ynabro/commit/9a4f4bc7acd1f365e288d649a8a8d13848703420))
+
 ## [2.2.10](https://github.com/jmcombs/ynabro/compare/openclaw-ynabro/v2.2.9...openclaw-ynabro/v2.2.10) (2026-05-17)
 
 
