@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.2.13](https://github.com/jmcombs/ynabro/compare/openclaw-ynabro/v2.2.12...openclaw-ynabro/v2.2.13) (2026-05-17)
+
+
+### Bug Fixes
+
+* **openclaw-ynabro:** restore getPlans() in ynabro_save_default_plan ([99ebbe8](https://github.com/jmcombs/ynabro/commit/99ebbe8156c3c5d50edb00df6d480cc73b671510))
+
 ## [2.2.12](https://github.com/jmcombs/ynabro/compare/openclaw-ynabro/v2.2.11...openclaw-ynabro/v2.2.12) (2026-05-17)
 
 
