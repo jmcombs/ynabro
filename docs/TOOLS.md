@@ -11,6 +11,17 @@ All tools that call the YNAB API require a valid Personal Access Token.
 
 Tools that do **not** require a token: `ynabro_get_skill_state`, `ynabro_update_skill_state` (local state only).
 
+When configuration is missing, plan-dependent tools return a structured error response:
+
+```json
+{
+  "error": "onboarding_required",
+  "missing": ["token"],
+  "message": "YNABro is not configured yet. Let's get you set up.",
+  "tokenInstructions": "To generate a YNAB Personal Access Token:\n..."
+}
+```
+
 ## YnabroClient
 
 Core client for interacting with the YNAB API.
@@ -20,6 +31,28 @@ Core client for interacting with the YNAB API.
 - `getPlans()` — Retrieve all plans for the user
 - `getTransactions(planId, options?)` — Get transactions with optional filtering
 - `updateTransaction(planId, transactionId, patch)` — Update a transaction
+
+---
+
+## ynabro_onboarding_status
+
+Checks whether YNAB access is fully configured. Available on both platforms.
+
+**Parameters:** None
+
+**Returns:** `OnboardingStatus` JSON:
+
+```ts
+{
+  ready: boolean;             // true if both token and plan are configured
+  missing: string[];          // Array of "token" and/or "plan" if incomplete
+  tokenInstructions: string;  // Static instructions for generating a YNAB PAT
+  nextStep?: string;          // Human-readable next step (present only when ready: false)
+}
+```
+
+**Usage:**
+The agent should call this proactively before any YNAB operation to detect whether onboarding is needed. If `ready` is `false`, walk the user through setup using the platform-specific flow described in the skill prompt.
 
 ---
 
