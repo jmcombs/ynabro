@@ -81,6 +81,20 @@ describe("openclaw-ynabro conformance", () => {
       "openclaw-ynabro must register the ynabro_save_default_plan tool for two-step onboarding",
     ).toContain("ynabro_save_default_plan");
   });
+
+  it("openClawAdapter implements hasToken", () => {
+    expect(
+      openClawSrc,
+      "openclaw-ynabro adapter must implement hasToken() on openClawAdapter",
+    ).toContain("hasToken");
+  });
+
+  it("ynabro_onboarding_status tool is registered", () => {
+    expect(
+      openClawSrc,
+      "openclaw-ynabro must register the ynabro_onboarding_status tool",
+    ).toContain("ynabro_onboarding_status");
+  });
 });
 
 describe("pi-ynabro conformance", () => {
@@ -134,5 +148,19 @@ describe("pi-ynabro conformance", () => {
       piSrc,
       "pi-ynabro must call setupYnab() from core rather than calling piConfigAdapter.setDefaultPlanId() directly",
     ).toContain("setupYnab(");
+  });
+
+  it("piConfigAdapter implements hasToken", () => {
+    expect(
+      piSrc,
+      "pi-ynabro adapter must implement hasToken() on piConfigAdapter",
+    ).toContain("hasToken");
+  });
+
+  it("ynabro_onboarding_status tool is registered", () => {
+    expect(
+      piSrc,
+      "pi-ynabro must register the ynabro_onboarding_status tool",
+    ).toContain("ynabro_onboarding_status");
   });
 });
