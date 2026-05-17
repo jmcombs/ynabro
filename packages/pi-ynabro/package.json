@@ -25,7 +25,7 @@
     ]
   },
   "dependencies": {
-    "ynabro": "file:../ynabro"
+    "ynabro": "^2.2.0"
   },
   "devDependencies": {
     "@earendil-works/pi-coding-agent": "^0.74.0",

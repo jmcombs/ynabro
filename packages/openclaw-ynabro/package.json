@@ -39,7 +39,7 @@
   },
   "dependencies": {
     "@sinclair/typebox": "^0.34.49",
-    "ynabro": "file:../ynabro"
+    "ynabro": "^2.2.0"
   },
   "devDependencies": {
     "@types/node": "^25.8.0",
