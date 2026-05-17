@@ -194,6 +194,42 @@ Rewrite the `Onboarding & Access` section of the skill prompt and update `docs/T
 | 3 | Tasks 5, 6 | Parallel — Task 5 needs Wave 2 adapters; Task 6 is independent |
 | Final verify | Verifier | — |
 
+## Verification Report
+
+**Date:** 2026-05-17  
+**Branch:** `feat/unified-onboarding`  
+**Verdict:** ✅ APPROVED (High confidence)
+
+### Final gate
+- `npm run check` → Exit 0: Biome clean (33 files), all workspaces typecheck, 4 test files, **39/39 tests passing**
+
+### Commits on branch
+| Commit | Description |
+|---|---|
+| `b484624` | feat: add onboarding status check and hasToken to config adapter (Task 1) |
+| `6c2c7cb` | chore: fix export sort order in ynabro core (biome) |
+| `aaf20ea` | feat(openclaw-ynabro): add onboarding status tool and structured error handling (Task 2) |
+| `3b34f43` | feat(pi-ynabro): add onboarding status tool and structured error handling (Task 3) |
+| `a0cf003` | test: add onboardingStatus tests and update setupYnab mocks (Task 4) |
+| `d331fc3` | chore: fix biome lint warnings from Wave 2 |
+| `92350dc` | fix(pi-ynabro): remove non-null assertions by refactoring helper functions |
+| `1e189eb` | test: add conformance tests for hasToken and onboarding_status (Task 5) |
+| `53b1f86` | docs: update skill prompt and architecture for unified onboarding (Task 6) |
+
+### All acceptance criteria verified ✅
+- `YnabroConfigAdapter.hasToken()` present in `setupYnab.ts` and implemented on both adapters
+- `onboardingStatus.ts` exports `OnboardingStatus`, `TOKEN_INSTRUCTIONS`, `checkOnboardingStatus`; re-exported from public API and present in `dist/index.d.ts`
+- Both adapters register `ynabro_onboarding_status` tool; `openclaw.plugin.json` updated
+- All 5 openclaw + 4 pi plan-dependent tools return `{ error: "onboarding_required" }` JSON (no raw throws)
+- `onboardingStatus.test.ts` — 8 tests; `setupYnab.test.ts` mocks updated; `conformance.test.ts` — 4 new assertions
+- `skills/ynabro/prompts/ynabro.md` — `YNAB_TOKEN` removed; proactive `ynabro_onboarding_status` instruction present
+- `docs/TOOLS.md` — `ynabro_onboarding_status` documented; structured error noted
+- `docs/ARCHITECTURE.md` — `hasToken()` in interface block; Onboarding Detection section added
+
+### Deferred (Phase 2)
+- Token validation via API call (currently presence-check only)
+- `validateToken()` method on `YnabroConfigAdapter`
+
 ## Rollback Plan
 
 `git checkout packages/ynabro/src packages/ynabro/tests packages/openclaw-ynabro/src packages/openclaw-ynabro/openclaw.plugin.json packages/pi-ynabro/src skills/ynabro/prompts docs` plus `npm run build -w packages/ynabro` to restore dist.

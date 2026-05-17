@@ -74,3 +74,33 @@ Manual review. Then confirm the overall suite still passes:
 ```bash
 npm run check
 ```
+
+---
+
+## Task 6 Complete ✅
+
+**What I did:**
+Updated three documentation files with the unified onboarding flow:
+1. Rewrote `skills/ynabro/prompts/ynabro.md` Onboarding & Access section to instruct the agent to call `ynabro_onboarding_status` proactively
+2. Added `ynabro_onboarding_status` tool reference to `docs/TOOLS.md` with full field documentation
+3. Extended `docs/ARCHITECTURE.md` with `hasToken()` in the YnabroConfigAdapter interface and added new "Onboarding Detection" section explaining the two-layer strategy
+
+**Files changed:**
+- `skills/ynabro/prompts/ynabro.md` — Replaced Onboarding & Access section, removed YNAB_TOKEN env var references
+- `docs/TOOLS.md` — Added ynabro_onboarding_status section, updated Authentication section with structured error info
+- `docs/ARCHITECTURE.md` — Added hasToken() to interface, updated adapter table, added checkOnboardingStatus() description, added Onboarding Detection section
+
+**Verification result:**
+```
+✅ npm run check: All linting, type-checking, and tests pass (39/39 tests green)
+✅ No source code modified (documentation-only as specified)
+```
+
+**Commit:**
+```
+53b1f86 docs: update skill prompt and architecture for unified onboarding
+```
+Committed on branch `feat/unified-onboarding`
+
+**Risks/Follow-ups:**
+None. Task 6 is complete. All unified onboarding implementation and documentation is now in place.

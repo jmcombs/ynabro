@@ -41,3 +41,48 @@ npm run test -w packages/ynabro -- --reporter=verbose
 ```
 
 All 4 new conformance assertions must be green. The existing 13 conformance assertions must still pass. Total test count increases by 4.
+
+---
+
+## Completion Notes
+
+### What Changed
+
+Added 4 new conformance test assertions to `packages/ynabro/tests/conformance.test.ts`:
+
+1. **openclaw-ynabro conformance block:**
+   - `openClawAdapter implements hasToken` — verifies `hasToken` method is present
+   - `ynabro_onboarding_status tool is registered` — verifies tool registration
+
+2. **pi-ynabro conformance block:**
+   - `piConfigAdapter implements hasToken` — verifies `hasToken` method is present
+   - `ynabro_onboarding_status tool is registered` — verifies tool registration
+
+All tests follow the existing pattern: `expect(src, "failure message").toContain("string")`
+
+### Files Changed
+
+- `packages/ynabro/tests/conformance.test.ts` — added 4 new test cases (28 lines added)
+
+### Verification Results
+
+```
+npm run test -w packages/ynabro -- --reporter=verbose
+```
+
+**Result:** ✅ All tests pass
+- Total test count: 39 (35 existing + 4 new)
+- All 4 new conformance assertions: GREEN
+- All 17 existing conformance assertions (13 + 4 from earlier tasks): GREEN
+- All other test suites: GREEN
+
+### Commit
+
+Committed on `feat/unified-onboarding`:
+```
+1e189eb test: add conformance tests for hasToken and onboarding_status on both adapters
+```
+
+### Status
+
+✅ **Task 5 complete** — All acceptance criteria met.
