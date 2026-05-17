@@ -320,9 +320,9 @@ export default definePluginEntry({
             if (!planId) {
               throw new Error("planId is required");
             }
-            // Pass undefined for plans — the agent already fetched them via
-            // ynabro_setup, so we skip the redundant getPlans() validation fetch.
-            await setupYnab(getClient(), undefined, planId, openClawAdapter);
+            const client = getClient();
+            const plans = await client.getPlans();
+            await setupYnab(client, plans, planId, openClawAdapter);
             return ok(
               JSON.stringify({
                 message: `Default plan set to: ${planId}`,
