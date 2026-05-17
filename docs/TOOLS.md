@@ -6,7 +6,7 @@ This document describes all available tools in the `ynabro` library.
 
 All tools that call the YNAB API require a valid Personal Access Token.
 
-- **`openclaw-ynabro`**: Token is resolved exclusively from `plugins.entries.openclaw-ynabro.config.token` in `openclaw.json`. No environment variable fallback.
+- **`openclaw-ynabro`**: Token is resolved exclusively from `plugins.entries.openclaw-ynabro.config.token`. That path is registered as a SecretRef-eligible surface, so the recommended setup is `openclaw secrets configure` (or `openclaw config set plugins.entries.openclaw-ynabro.config.token --ref-source env|file|exec --ref-provider <provider> --ref-id <id>`). Plaintext in `openclaw.json` is supported but flagged by `openclaw secrets audit`. The plugin itself has no environment-variable fallback; use an `env` SecretRef if you want env-backed storage.
 - **`pi-ynabro`**: Token is stored in pi's `AuthStorage` (`~/.pi/agent/auth.json`) after running `ynabro_setup`.
 
 Tools that do **not** require a token: `ynabro_get_skill_state`, `ynabro_update_skill_state` (local state only).
@@ -58,7 +58,7 @@ The agent should call this proactively before any YNAB operation to detect wheth
 
 ## ynabro_setup
 
-**OpenClaw:** Fetches available YNAB plans and returns them for selection. Requires token configured in `openclaw.json`. Returns `{ plans: [{ id: string, name: string }] }`. Call `ynabro_save_default_plan` next to complete onboarding.
+**OpenClaw:** Fetches available YNAB plans and returns them for selection. Requires the token to be configured at `plugins.entries.openclaw-ynabro.config.token` (preferably via `openclaw secrets configure`). Returns `{ plans: [{ id: string, name: string }] }`. Call `ynabro_save_default_plan` next to complete onboarding.
 
 **pi:** Interactive one-step onboarding. Prompts for a YNAB Personal Access Token (if not already stored) and presents a plan selector. Stores both in pi's AuthStorage. No follow-up call required.
 
