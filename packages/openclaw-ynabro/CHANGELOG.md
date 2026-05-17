@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.2.7](https://github.com/jmcombs/ynabro/compare/openclaw-ynabro/v2.2.6...openclaw-ynabro/v2.2.7) (2026-05-17)
+
+
+### Bug Fixes
+
+* **openclaw-ynabro:** move openclaw to dependencies so SDK imports resolve at runtime ([#58](https://github.com/jmcombs/ynabro/issues/58)) ([c1bff16](https://github.com/jmcombs/ynabro/commit/c1bff1640eef9ae9986e0d7cf5b15ce81486731b))
+
 ## [2.2.6](https://github.com/jmcombs/ynabro/compare/openclaw-ynabro/v2.2.5...openclaw-ynabro/v2.2.6) (2026-05-17)
 
 
