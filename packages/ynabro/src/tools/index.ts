@@ -1,4 +1,5 @@
 export { approveTransaction } from "./approveTransaction.js";
+export { batchApproveTransactions } from "./batchApproveTransactions.js";
 export { getPendingTransactions } from "./getPendingTransactions.js";
 export { getPlanInfo } from "./getPlanInfo.js";
 export { getRecentTransactions } from "./getRecentTransactions.js";

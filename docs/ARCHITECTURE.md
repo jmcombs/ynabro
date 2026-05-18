@@ -46,6 +46,19 @@ Example state structure:
 - `memory`: Flexible array for agent learning and patterns
 ```
 
+## Efficiency Architecture (Rate Limits & Caching)
+
+To stay within YNAB's 200 requests/hour limit, Ynabro implements:
+
+- **Pluggable CacheStore**: `YnabroClient` accepts any `CacheStore` implementation.
+  - `InMemoryCache` (default): Fast, session-scoped.
+  - `FileBasedCache`: Portable across agents via `.ynabro/cache` directory.
+- **Request Tracking**: Rolling 60-minute window tracking via `getRateLimitStatus()`.
+- **Exponential Backoff**: Automatic retry on 429 responses.
+- **Batch Updates**: `batchUpdateTransactions` uses a single PATCH call for multiple changes.
+
+Agents and plugins should prefer `FileBasedCache` when running multiple agents on the same host to maximize cache hits.
+
 ## Token Resolution
 
 ### OpenClaw
