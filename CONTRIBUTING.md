@@ -40,6 +40,15 @@ When documenting a new method or tool, include:
 - Example usage
 - Side effects (e.g. state changes)
 
+### Adapting to Efficiency Architecture
+
+New functions and tools should be designed to work with the pluggable caching and rate-limit tracking system:
+
+- Accept a `YnabroClient` instance rather than creating one internally.
+- Use `client.getRateLimitStatus()` before performing bulk operations.
+- Prefer batch methods (`batchUpdateTransactions`) when updating many records.
+- Document whether the new function benefits from or bypasses the cache.
+
 ### Mermaid Diagrams
 
 Significant features and flows must include Mermaid diagrams:

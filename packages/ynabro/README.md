@@ -36,8 +36,31 @@ await approveTransaction(client, planId, transactionId);
 - [docs/TOOLS.md](./docs/TOOLS.md) — Tool reference
 - [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md) — Design decisions
 
+## Efficiency & Rate Limiting
+
+YNAB enforces a limit of 200 requests per hour. Ynabro includes several optimizations to help agents stay well within this limit:
+
+- **Portable Caching**: Use `FileBasedCache` to share cached data across different agents (Pi, OpenClaw, etc.) on the same machine.
+- **Batch Operations**: Use `batchApproveTransactions` instead of approving one transaction at a time.
+- **Rate Limit Awareness**: Call `client.getRateLimitStatus()` to monitor usage.
+- **Automatic Retries**: Built-in exponential backoff on 429 errors.
+
+```ts
+import { YnabroClient, FileBasedCache, batchApproveTransactions } from 'ynabro';
+
+const cache = new FileBasedCache();
+const client = new YnabroClient(process.env.YNAB_TOKEN!, cache);
+
+// Batch approve many transactions in one call
+const ids = ["tx1", "tx2", "tx3"];
+await batchApproveTransactions(client, planId, ids);
+
+console.log(client.getRateLimitStatus());
+```
+
 ## Philosophy
 
 - Thin, reliable wrapper around the official YNAB SDK
 - Public API uses "Plan" terminology
 - Designed for agent consumption first
+- Optimized for rate limit efficiency and portability across agents

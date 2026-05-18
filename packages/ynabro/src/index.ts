@@ -1,6 +1,10 @@
+export type { CacheStore } from "./client/CacheStore.js";
+export { FileBasedCache } from "./client/FileBasedCache.js";
+export { InMemoryCache } from "./client/InMemoryCache.js";
 export { YnabroClient } from "./client/YnabroClient.js";
 export {
   approveTransaction,
+  batchApproveTransactions,
   checkOnboardingStatus,
   getPendingTransactions,
   getPlanInfo,

@@ -28,6 +28,15 @@ When extending ynabro:
 
 1. Add client methods in `packages/ynabro/src/client/YnabroClient.ts`
 2. Create new tool functions in `packages/ynabro/src/tools/`
+
+## Efficiency Guidelines
+
+To avoid hitting YNAB's 200 requests/hour limit:
+
+- Prefer `batchApproveTransactions` over multiple `approveTransaction` calls.
+- Use the provided `CacheStore` (or `FileBasedCache`) when creating long-running agents.
+- Check `client.getRateLimitStatus()` before performing heavy operations.
+- New tools should accept a `YnabroClient` instance rather than creating their own to benefit from shared caching and rate-limit tracking.
 3. Export new tools via `packages/ynabro/src/tools/index.ts` and `packages/ynabro/src/index.ts`
 4. Place all behavioral prompts and rules under `skills/ynabro/prompts/`
 5. Do **not** duplicate prompts or skills inside `packages/pi-ynabro/`

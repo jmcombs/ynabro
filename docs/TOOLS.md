@@ -31,6 +31,8 @@ Core client for interacting with the YNAB API.
 - `getPlans()` — Retrieve all plans for the user
 - `getTransactions(planId, options?)` — Get transactions with optional filtering
 - `updateTransaction(planId, transactionId, patch)` — Update a transaction
+- `batchUpdateTransactions(planId, updates[])` — Batch update multiple transactions in one call
+- `getRateLimitStatus()` — Returns current usage within the 200 req/hour window
 
 ---
 
@@ -156,3 +158,24 @@ getPlanInfo(client: YnabroClient, planId: string): Promise<YnabPlan | undefined>
 Returns basic metadata for a specific plan.
 
 The plan ID is resolved automatically from the stored default. No `planId` parameter is required or accepted.
+
+---
+
+## batchApproveTransactions
+
+```ts
+batchApproveTransactions(
+  client: YnabroClient,
+  planId: string,
+  transactionIds: string[]
+): Promise<void>
+```
+
+Approves multiple transactions using a single batch API call.
+
+This is the preferred method for approving many transactions at once to minimize rate limit usage.
+
+Example:
+```ts
+await batchApproveTransactions(client, planId, ["tx1", "tx2", "tx3"]);
+```
